@@ -129,7 +129,7 @@ jobs:
 
       - name: Install Trivy
         if: steps.image-check.outputs.exists == 'true'
-        uses: aquasecurity/setup-trivy@v0.2.3
+        uses: aquasecurity/setup-trivy@v0.3.1
 
       - name: Run Trivy image scan (SARIF)
         if: steps.image-check.outputs.exists == 'true'
