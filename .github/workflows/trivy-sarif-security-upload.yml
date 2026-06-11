@@ -12,7 +12,7 @@ on:
           - all
           - single
       image_path:
-        description: "Image path under ghcr.io (required for single), e.g. middlewaregruppen/mgp-base-images/java-21"
+        description: "Image path under ghcr.io (required for single), e.g. crackitty/base-images/java-21"
         required: false
         type: string
       image_tag:

@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: java-17-base-image
+  description: Java 17 base image for Golden Paths services
+  annotations:
+    github.com/project-slug: crackitty/base-images
+    backstage.io/source-location: url:https://github.com/crackitty/base-images/tree/main/java-17
+    fleet-management/release-please-path: java-17
+    fleet-management/container-image: ghcr.io/crackitty/base-images/java-17
+    fleet-management/current-tag: 1.0.0
+    fleet-management/security-status: unknown
+    fleet-management/digest: sha256:271df1c93518b8da633f4dd440479b2a19f68f5ab43654c77e2f7657e72e687c
+  tags:
+    - docker
+    - java
+    - base-image
+spec:
+  type: base-image
+  lifecycle: production
+  owner: group:default/platform-team

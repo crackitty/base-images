@@ -1,13 +1,9 @@
 {
-  "entityRef": "resource:default/mgp-java-21-base-image",
-  "image": "ghcr.io/middlewaregruppen/mgp-base-images/java-21",
+  "entityRef": "resource:default/java-21-base-image",
+  "image": "ghcr.io/crackitty/base-images/java-21",
   "currentTag": "1.0.2",
   "latestFixedTag": null,
-  "vulnerableTags": [
-    "1.0.0",
-    "1.0.1",
-    "1.0.2"
-  ],
+  "vulnerableTags": ["1.0.0", "1.0.1", "1.0.2"],
   "scannedAt": "2026-05-13T10:45:16.349Z",
   "summary": {
     "critical": 0,
@@ -42,7 +38,7 @@
           "description": "GNU Wget through 1.21.1 does not omit the Authorization header upon a redirect to a different origin, a related issue to CVE-2018-1000007.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2021-31879",
           "publishedDate": "2021-04-29T05:15:08.707Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.1,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -58,7 +54,7 @@
           "description": "GNU Tar through 1.35 allows file overwrite via directory traversal in crafted TAR archives, with a certain two-step process. First, the victim must extract an archive that contains a ../ symlink to a critical directory. Second, the victim must extract an archive that contains a critical file, specified via a relative pathname that begins with the symlink name and ends with that critical file's name. Here, the extraction follows the symlink and overwrites the critical file. This bypasses the protection mechanism of \"Member name contains '..'\" that would occur for a single TAR archive that attempted to specify the critical file via a ../ approach. For example, the first archive can contain \"x -> ../../../../../home/victim/.ssh\" and the second archive can contain x/authorized_keys. This can affect server applications that automatically extract any number of user-supplied TAR archives, and were relying on the blocking of traversal. This can also affect software installation processes in which \"tar xf\" is run more than once (e.g., when installing a package can automatically install two dependencies that are set up as untrusted tarballs instead of official packages). NOTE: the official GNU Tar manual has an otherwise-empty directory for each \"tar xf\" in its Security Rules of Thumb; however, third-party advice leads users to run \"tar xf\" more than once into the same directory.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-45582",
           "publishedDate": "2025-07-11T17:15:37.183Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.6,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
           "resolvedByBump": null
@@ -74,7 +70,7 @@
           "description": "In libexpat through 2.7.3, a crafted file with an approximate size of 2 MiB can lead to dozens of seconds of processing time.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-66382",
           "publishedDate": "2025-11-28T07:15:57.9Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -90,7 +86,7 @@
           "description": "nghttp2 is an implementation of the Hypertext Transfer Protocol version 2 in C. Prior to version 1.68.1, the nghttp2 library stops reading the incoming data when user facing public API `nghttp2_session_terminate_session` or `nghttp2_session_terminate_session2` is called by the application. They might be called internally by the library when it detects the situation that is subject to connection error. Due to the missing internal state validation, the library keeps reading the rest of the data after one of those APIs is called. Then receiving a malformed frame that causes FRAME_SIZE_ERROR causes assertion failure. nghttp2 v1.68.1 adds missing state validation to avoid assertion failure. No known workarounds are available.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-27135",
           "publishedDate": "2026-03-18T18:16:26.723Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -106,7 +102,7 @@
           "description": "util-linux is a random collection of Linux utilities. Prior to version 2.41.4, a TOCTOU (Time-of-Check-Time-of-Use) vulnerability has been identified in the SUID binary /usr/bin/mount from util-linux. The mount binary, when setting up loop devices, validates the source file path with user privileges via fork() + setuid() + realpath(), but subsequently re-canonicalizes and opens it with root privileges (euid=0) without verifying that the path has not been replaced between both operations. Neither O_NOFOLLOW, nor inode comparison, nor post-open fstat() are employed. This allows a local unprivileged user to replace the source file with a symlink pointing to any root-owned file or device during the race window, causing the SUID binary to open and mount it as root. Exploitation requires an /etc/fstab entry with user,loop options whose path points to a directory where the attacker has write permission, and that /usr/bin/mount has the SUID bit set (the default configuration on virtually all Linux distributions). The impact is unauthorized read access to root-protected files and block devices, including backup images, disk volumes, and any file containing a valid filesystem. This issue has been patched in version 2.41.4.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-27456",
           "publishedDate": "2026-04-03T22:16:25.4Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 4.7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -122,7 +118,7 @@
           "description": "systemd, a system and service manager, (as PID 1) hits an assert and freezes execution when an unprivileged IPC API call is made with spurious data. On version v249 and older the effect is not an assert, but stack overwriting, with the attacker controlled content. From version v250 and newer this is not possible as the safety check causes an assert instead. This IPC call was added in v239, so versions older than that are not affected. Versions 260-rc1, 259.2, 258.5, and 257.11 contain patches. No known workarounds are available.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-29111",
           "publishedDate": "2026-03-23T22:16:26.267Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.8,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -138,7 +134,7 @@
           "description": "Issue summary: Applications using RSASVE key encapsulation to establish\na secret encryption key can send contents of an uninitialized memory buffer to\na malicious peer.\n\nImpact summary: The uninitialized buffer might contain sensitive data from the\nprevious execution of the application process which leads to sensitive data\nleakage to an attacker.\n\nRSA_public_encrypt() returns the number of bytes written on success and -1\non error. The affected code tests only whether the return value is non-zero.\nAs a result, if RSA encryption fails, encapsulation can still return success to\nthe caller, set the output lengths, and leave the caller to use the contents of\nthe ciphertext buffer as if a valid KEM ciphertext had been produced.\n\nIf applications use EVP_PKEY_encapsulate() with RSA/RSASVE on an\nattacker-supplied invalid RSA public key without first validating that key,\nthen this may cause stale or uninitialized contents of the caller-provided\nciphertext buffer to be disclosed to the attacker in place of the KEM\nciphertext.\n\nAs a workaround calling EVP_PKEY_public_check() or\nEVP_PKEY_public_check_quick() before EVP_PKEY_encapsulate() will mitigate\nthe issue.\n\nThe FIPS modules in 3.6, 3.5, 3.4, 3.3, 3.1 and 3.0 are affected by this issue.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-31790",
           "publishedDate": "2026-04-07T22:16:21.77Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -154,7 +150,7 @@
           "description": "LIBPNG is a reference library for use in applications that read, create, and manipulate PNG (Portable Network Graphics) raster image files. In versions 1.2.1 through 1.6.55, `png_set_tRNS` and `png_set_PLTE` each alias a heap-allocated buffer between `png_struct` and `png_info`, sharing a single allocation across two structs with independent lifetimes. The `trans_alpha` aliasing has been present since at least libpng 1.0, and the `palette` aliasing since at least 1.2.1. Both affect all prior release lines `png_set_tRNS` sets `png_ptr->trans_alpha = info_ptr->trans_alpha` (256-byte buffer) and `png_set_PLTE` sets `info_ptr->palette = png_ptr->palette` (768-byte buffer). In both cases, calling `png_free_data` (with `PNG_FREE_TRNS` or `PNG_FREE_PLTE`) frees the buffer through `info_ptr` while the corresponding `png_ptr` pointer remains dangling. Subsequent row-transform functions dereference and, in some code paths, write to the freed memory. A second call to `png_set_tRNS` or `png_set_PLTE` has the same effect, because both functions call `png_free_data` internally before reallocating the `info_ptr` buffer. Version 1.6.56 fixes the issue.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-33416",
           "publishedDate": "2026-03-26T17:16:38.443Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -170,7 +166,7 @@
           "description": "LIBPNG is a reference library for use in applications that read, create, and manipulate PNG (Portable Network Graphics) raster image files. In versions 1.6.36 through 1.6.55, an out-of-bounds read and write exists in libpng's ARM/AArch64 Neon-optimized palette expansion path. When expanding 8-bit paletted rows to RGB or RGBA, the Neon loop processes a final partial chunk without verifying that enough input pixels remain. Because the implementation works backward from the end of the row, the final iteration dereferences pointers before the start of the row buffer (OOB read) and writes expanded pixel data to the same underflowed positions (OOB write). This is reachable via normal decoding of attacker-controlled PNG input if Neon is enabled. Version 1.6.56 fixes the issue.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-33636",
           "publishedDate": "2026-03-26T17:16:41.477Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.6,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:L/I:L/A:H",
           "resolvedByBump": null
@@ -186,7 +182,7 @@
           "description": "LIBPNG is a reference library for use in applications that read, create, and manipulate PNG (Portable Network Graphics) raster image files. From 1.0.9 to before 1.6.57, passing a pointer obtained from png_get_PLTE, png_get_tRNS, or png_get_hIST back into the corresponding setter on the same png_struct/png_info pair causes the setter to read from freed memory and copy its contents into the replacement buffer. The setter frees the internal buffer before copying from the caller-supplied pointer, which now dangles. The freed region may contain stale data (producing silently corrupted chunk metadata) or data from subsequent heap allocations (leaking unrelated heap contents into the chunk struct). This vulnerability is fixed in 1.6.57.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-34757",
           "publishedDate": "2026-04-09T15:16:11.003Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 4.4,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -202,7 +198,7 @@
           "description": "The iconv() function in the GNU C Library versions 2.43 and earlier may crash due to an assertion failure when converting inputs from the IBM1390 or IBM1399 character sets, which may be used to remotely crash an application.\n\n\n\nThis vulnerability can be trivially mitigated by removing the IBM1390 and IBM1399 character sets from systems that do not need them.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4046",
           "publishedDate": "2026-03-30T18:16:19.573Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
           "resolvedByBump": null
@@ -218,7 +214,7 @@
           "description": "Calling gethostbyaddr or gethostbyaddr_r with a configured nsswitch.conf that specifies the library's DNS backend in the GNU C Library version 2.34 to version 2.43 could, with a crafted response from the configured DNS server, result in a violation of the DNS specification that causes the application to treat a non-answer section of the DNS response as a valid answer.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4437",
           "publishedDate": "2026-03-20T20:16:49.477Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L",
           "resolvedByBump": null
@@ -234,7 +230,7 @@
           "description": "Calling gethostbyaddr or gethostbyaddr_r with a configured nsswitch.conf that specifies the library's DNS backend in the GNU C library version 2.34 to version 2.43 could result in an invalid DNS hostname being returned to the caller in violation of the DNS specification.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4438",
           "publishedDate": "2026-03-20T20:16:49.623Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 4,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -250,7 +246,7 @@
           "description": "A flaw was found in libcap. A local unprivileged user can exploit a Time-of-check-to-time-of-use (TOCTOU) race condition in the `cap_set_file()` function. This allows an attacker with write access to a parent directory to redirect file capability updates to an attacker-controlled file. By doing so, capabilities can be injected into or stripped from unintended executables, leading to privilege escalation.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4878",
           "publishedDate": "2026-04-09T16:16:31.987Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -266,7 +262,7 @@
           "description": "A flaw was found in libcurl. An application using libcurl that performs an authenticated HTTP(S) request after a Negotiate-authenticated one to the same host may incorrectly reuse the previous connection. This authentication bypass vulnerability allows the second request to be sent over a connection authenticated with different credentials, potentially leading to unauthorized access or information disclosure.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5545",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -282,7 +278,7 @@
           "description": "A flaw was found in tar. A remote attacker could exploit this vulnerability by crafting a malicious archive, leading to hidden file injection with fully attacker-controlled content. This bypasses pre-extraction inspection mechanisms, potentially allowing an attacker to introduce malicious files onto a system without detection.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5704",
           "publishedDate": "2026-04-06T16:16:42.14Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -298,7 +294,7 @@
           "description": "When sed is invoked with both -i (in-place edit) and --follow-symlinks, the function open_next_file() performs two separate, non-atomic filesystem operations on the same path: \n1. resolves symlink to its target and stores the resolved path for determining when output is written,\n2. opens the original symlink path (not the resolved one) to read the file. \nBetween these two calls there is a race window. If an attacker atomically replaces the symlink with a different target during that window, sed will: read content from the new (attacker-chosen) symlink target and write the processed result to the path recorded in step 1. This can lead to arbitrary file overwrite with attacker-controlled content in the context of the sed process.\n\n\nThis issue was fixed in version 4.10.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5958",
           "publishedDate": "2026-04-20T12:16:08.433Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": null,
           "cvssVector": null,
           "resolvedByBump": null
@@ -314,7 +310,7 @@
           "description": "A flaw was found in curl. When curl is configured to use distinct proxies for different URL schemes, a redirect from a URL using an authenticated proxy to one using an unauthenticated proxy can inadvertently expose the initial proxy's credentials. This improper credential management (CWE-522) may allow an attacker to gain unauthorized access or information by intercepting these disclosed credentials.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-6253",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -330,7 +326,7 @@
           "description": "A flaw was found in libcurl. When configured to use a .netrc file for credentials and follow HTTP redirects, libcurl can inadvertently send the password from the initial connection to the redirected host. This sensitive information disclosure occurs when both the original and redirect URLs use clear text HTTP, are performed over the same HTTP proxy, and the same connection is reused. This vulnerability, categorized as an Exposure of Sensitive Information to an Unauthorized Actor (CWE-200), could allow an attacker to obtain user credentials.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-6429",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -346,7 +342,7 @@
           "description": "cross-proxy Digest auth state leak",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-7168",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": null,
           "cvssVector": null,
           "resolvedByBump": null
@@ -362,7 +358,7 @@
           "description": "In PCRE 8.41, the OP_KETRMAX feature in the match function in pcre_exec.c allows stack exhaustion (uncontrolled recursion) when processing a crafted regular expression.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2017-11164",
           "publishedDate": "2017-07-11T03:29:00.277Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -378,7 +374,7 @@
           "description": "libiberty/rust-demangle.c in GNU GCC 11.2 allows stack consumption in demangle_const, as demonstrated by nm-new.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-27943",
           "publishedDate": "2022-03-26T13:15:07.9Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -394,7 +390,7 @@
           "description": "Integer overflow vulnerability in pcre2test before 10.41 allows attackers to cause a denial of service or other unspecified impacts via negative input.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-41409",
           "publishedDate": "2023-07-18T14:15:12.197Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -410,7 +406,7 @@
           "description": "A vulnerability was found in zstd v1.4.10, where an attacker can supply empty string as an argument to the command line tool to cause buffer overrun.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-4899",
           "publishedDate": "2023-03-31T20:15:07.213Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -426,7 +422,7 @@
           "description": "In Shadow 4.13, it is possible to inject control characters into fields provided to the SUID program chfn (change finger). Although it is not possible to exploit this directly (e.g., adding a new user fails because \\n is in the block list), it is possible to misrepresent the /etc/passwd file when viewed. Use of \\r manipulations and Unicode characters to work around blocking of the : character make it possible to give the impression that a new user has been added. In other words, an adversary may be able to convince a system administrator to take the system offline (an indirect, social-engineered denial of service) by demonstrating that \"cat /etc/passwd\" shows a rogue user account.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-29383",
           "publishedDate": "2023-04-14T22:15:07.68Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -442,7 +438,7 @@
           "description": "NCurse v6.4-20230418 was discovered to contain a segmentation fault via the component _nc_wrap_entry().",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495",
           "publishedDate": "2023-12-12T15:15:07.867Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -458,7 +454,7 @@
           "description": "A vulnerability was found in systemd-resolved. This issue may allow systemd-resolved to accept records of DNSSEC-signed domains even when they have no signature, allowing man-in-the-middles (or the upstream DNS resolver) to manipulate records.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-7008",
           "publishedDate": "2023-12-23T13:15:07.573Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.9,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -474,7 +470,7 @@
           "description": "A timing-based side-channel flaw was found in libgcrypt's RSA implementation. This issue may allow a remote attacker to initiate a Bleichenbacher-style attack, which can lead to the decryption of RSA ciphertexts.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-2236",
           "publishedDate": "2024-03-06T22:15:57.977Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.9,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -490,7 +486,7 @@
           "description": "shadow-utils (aka shadow) 4.4 through 4.17.0 establishes a default /etc/subuid behavior (e.g., uid 100000 through 165535 for the first user account) that can realistically conflict with the uids of users defined on locally administered networks, potentially leading to account takeover, e.g., by leveraging newuidmap for access to an NFS home directory (or same-host resources in the case of remote logins by these local network users). NOTE: it may also be argued that system administrators should not have assigned uids, within local networks, that are within the range that can occur in /etc/subuid.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433",
           "publishedDate": "2024-12-26T09:15:07.267Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 3.6,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -506,7 +502,7 @@
           "description": "Issue summary: An uncommon configuration of clients performing DANE TLSA-based\nserver authentication, when paired with uncommon server DANE TLSA records, may\nresult in a use-after-free and/or double-free on the client side.\n\nImpact summary: A use after free can have a range of potential consequences\nsuch as the corruption of valid data, crashes or execution of arbitrary code.\n\nHowever, the issue only affects clients that make use of TLSA records with both\nthe PKIX-TA(0/PKIX-EE(1) certificate usages and the DANE-TA(2) certificate\nusage.\n\nBy far the most common deployment of DANE is in SMTP MTAs for which RFC7672\nrecommends that clients treat as 'unusable' any TLSA records that have the PKIX\ncertificate usages.  These SMTP (or other similar) clients are not vulnerable\nto this issue.  Conversely, any clients that support only the PKIX usages, and\nignore the DANE-TA(2) usage are also not vulnerable.\n\nThe client would also need to be communicating with a server that publishes a\nTLSA RRset with both types of TLSA records.\n\nNo FIPS modules are affected by this issue, the problem code is outside the\nFIPS module boundary.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-28387",
           "publishedDate": "2026-04-07T22:16:20.7Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 8.1,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -522,7 +518,7 @@
           "description": "Issue summary: When a delta CRL that contains a Delta CRL Indicator extension\nis processed a NULL pointer dereference might happen if the required CRL\nNumber extension is missing.\n\nImpact summary: A NULL pointer dereference can trigger a crash which\nleads to a Denial of Service for an application.\n\nWhen CRL processing and delta CRL processing is enabled during X.509\ncertificate verification, the delta CRL processing does not check\nwhether the CRL Number extension is NULL before dereferencing it.\nWhen a malformed delta CRL file is being processed, this parameter\ncan be NULL, causing a NULL pointer dereference.\n\nExploiting this issue requires the X509_V_FLAG_USE_DELTAS flag to be enabled in\nthe verification context, the certificate being verified to contain a\nfreshestCRL extension or the base CRL to have the EXFLAG_FRESHEST flag set, and\nan attacker to provide a malformed CRL to an application that processes it.\n\nThe vulnerability is limited to Denial of Service and cannot be escalated to\nachieve code execution or memory disclosure. For that reason the issue was\nassessed as Low severity according to our Security Policy.\n\nThe FIPS modules in 3.6, 3.5, 3.4, 3.3 and 3.0 are not affected by this issue,\nas the affected code is outside the OpenSSL FIPS module boundary.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-28388",
           "publishedDate": "2026-04-07T22:16:20.863Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -538,7 +534,7 @@
           "description": "Issue summary: During processing of a crafted CMS EnvelopedData message\nwith KeyAgreeRecipientInfo a NULL pointer dereference can happen.\n\nImpact summary: Applications that process attacker-controlled CMS data may\ncrash before authentication or cryptographic operations occur resulting in\nDenial of Service.\n\nWhen a CMS EnvelopedData message that uses KeyAgreeRecipientInfo is\nprocessed, the optional parameters field of KeyEncryptionAlgorithmIdentifier\nis examined without checking for its presence. This results in a NULL\npointer dereference if the field is missing.\n\nApplications and services that call CMS_decrypt() on untrusted input\n(e.g., S/MIME processing or CMS-based protocols) are vulnerable.\n\nThe FIPS modules in 3.6, 3.5, 3.4, 3.3 and 3.0 are not affected by this\nissue, as the affected code is outside the OpenSSL FIPS module boundary.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-28389",
           "publishedDate": "2026-04-07T22:16:21.03Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -554,7 +550,7 @@
           "description": "Issue summary: During processing of a crafted CMS EnvelopedData message\nwith KeyTransportRecipientInfo a NULL pointer dereference can happen.\n\nImpact summary: Applications that process attacker-controlled CMS data may\ncrash before authentication or cryptographic operations occur resulting in\nDenial of Service.\n\nWhen a CMS EnvelopedData message that uses KeyTransportRecipientInfo with\nRSA-OAEP encryption is processed, the optional parameters field of\nRSA-OAEP SourceFunc algorithm identifier is examined without checking\nfor its presence. This results in a NULL pointer dereference if the field\nis missing.\n\nApplications and services that call CMS_decrypt() on untrusted input\n(e.g., S/MIME processing or CMS-based protocols) are vulnerable.\n\nThe FIPS modules in 3.6, 3.5, 3.4, 3.3 and 3.0 are not affected by this\nissue, as the affected code is outside the OpenSSL FIPS module boundary.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-28390",
           "publishedDate": "2026-04-07T22:16:21.19Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -570,7 +566,7 @@
           "description": "Issue summary: Converting an excessively large OCTET STRING value to\na hexadecimal string leads to a heap buffer overflow on 32 bit platforms.\n\nImpact summary: A heap buffer overflow may lead to a crash or possibly\nan attacker controlled code execution or other undefined behavior.\n\nIf an attacker can supply a crafted X.509 certificate with an excessively\nlarge OCTET STRING value in extensions such as the Subject Key Identifier\n(SKID) or Authority Key Identifier (AKID) which are being converted to hex,\nthe size of the buffer needed for the result is calculated as multiplication\nof the input length by 3. On 32 bit platforms, this multiplication may overflow\nresulting in the allocation of a smaller buffer and a heap buffer overflow.\n\nApplications and services that print or log contents of untrusted X.509\ncertificates are vulnerable to this issue. As the certificates would have\nto have sizes of over 1 Gigabyte, printing or logging such certificates\nis a fairly unlikely operation and only 32 bit platforms are affected,\nthis issue was assigned Low severity.\n\nThe FIPS modules in 3.6, 3.5, 3.4, 3.3 and 3.0 are not affected by this\nissue, as the affected code is outside the OpenSSL FIPS module boundary.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-31789",
           "publishedDate": "2026-04-07T22:16:21.617Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 9.8,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -586,7 +582,7 @@
           "description": "A flaw was found in curl. A remote attacker could exploit this by initiating an unencrypted connection (via IMAP, SMTP, or POP3) and then making a subsequent request to the same host that requires Transport Layer Security (TLS). Due to incorrect connection reuse, the subsequent request would bypass the TLS requirement, leading to the transmission of sensitive information in cleartext. This vulnerability, categorized as Cleartext Transmission of Sensitive Information (CWE-319), results in information disclosure.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4873",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -602,7 +598,7 @@
           "description": "A flaw was found in libcurl. Due to a logical error in the connection reuse mechanism for SMB (Server Message Block) transfers, libcurl might reuse an existing SMB connection with a different share than intended. This vulnerability, categorized as CWE-488 (Exposure of Data Element to Wrong Session), could lead to the download of an incorrect file or the upload of a file to an unintended location when an application uses libcurl for SMB transfers.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5773",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -618,7 +614,7 @@
           "description": "A flaw was found in libcurl. This vulnerability allows for information disclosure when a custom `Host:` header is used in an initial HTTP request, and a subsequent request reuses the same connection without specifying a new `Host:` header. This can lead to libcurl incorrectly sending cookies intended for the first host to the second host, resulting in a cookie leak. This issue is categorized as an Origin Validation Error (CWE-346). Exploitation typically requires specific debugging configurations.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-6276",
           "publishedDate": null,
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.0 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.0 (ubuntu 22.04)",
           "cvssScore": 3.7,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N",
           "resolvedByBump": null
@@ -694,7 +690,7 @@
           "description": "GNU Wget through 1.21.1 does not omit the Authorization header upon a redirect to a different origin, a related issue to CVE-2018-1000007.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2021-31879",
           "publishedDate": "2021-04-29T05:15:08.707Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 6.1,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -710,7 +706,7 @@
           "description": "GNU Tar through 1.35 allows file overwrite via directory traversal in crafted TAR archives, with a certain two-step process. First, the victim must extract an archive that contains a ../ symlink to a critical directory. Second, the victim must extract an archive that contains a critical file, specified via a relative pathname that begins with the symlink name and ends with that critical file's name. Here, the extraction follows the symlink and overwrites the critical file. This bypasses the protection mechanism of \"Member name contains '..'\" that would occur for a single TAR archive that attempted to specify the critical file via a ../ approach. For example, the first archive can contain \"x -> ../../../../../home/victim/.ssh\" and the second archive can contain x/authorized_keys. This can affect server applications that automatically extract any number of user-supplied TAR archives, and were relying on the blocking of traversal. This can also affect software installation processes in which \"tar xf\" is run more than once (e.g., when installing a package can automatically install two dependencies that are set up as untrusted tarballs instead of official packages). NOTE: the official GNU Tar manual has an otherwise-empty directory for each \"tar xf\" in its Security Rules of Thumb; however, third-party advice leads users to run \"tar xf\" more than once into the same directory.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-45582",
           "publishedDate": "2025-07-11T17:15:37.183Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 5.6,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
           "resolvedByBump": null
@@ -726,7 +722,7 @@
           "description": "In libexpat through 2.7.3, a crafted file with an approximate size of 2 MiB can lead to dozens of seconds of processing time.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-66382",
           "publishedDate": "2025-11-28T07:15:57.9Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -742,7 +738,7 @@
           "description": "In PCRE 8.41, the OP_KETRMAX feature in the match function in pcre_exec.c allows stack exhaustion (uncontrolled recursion) when processing a crafted regular expression.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2017-11164",
           "publishedDate": "2017-07-11T03:29:00.277Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -758,7 +754,7 @@
           "description": "libiberty/rust-demangle.c in GNU GCC 11.2 allows stack consumption in demangle_const, as demonstrated by nm-new.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-27943",
           "publishedDate": "2022-03-26T13:15:07.9Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -774,7 +770,7 @@
           "description": "Integer overflow vulnerability in pcre2test before 10.41 allows attackers to cause a denial of service or other unspecified impacts via negative input.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-41409",
           "publishedDate": "2023-07-18T14:15:12.197Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -790,7 +786,7 @@
           "description": "A vulnerability was found in zstd v1.4.10, where an attacker can supply empty string as an argument to the command line tool to cause buffer overrun.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2022-4899",
           "publishedDate": "2023-03-31T20:15:07.213Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 7.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -806,7 +802,7 @@
           "description": "In Shadow 4.13, it is possible to inject control characters into fields provided to the SUID program chfn (change finger). Although it is not possible to exploit this directly (e.g., adding a new user fails because \\n is in the block list), it is possible to misrepresent the /etc/passwd file when viewed. Use of \\r manipulations and Unicode characters to work around blocking of the : character make it possible to give the impression that a new user has been added. In other words, an adversary may be able to convince a system administrator to take the system offline (an indirect, social-engineered denial of service) by demonstrating that \"cat /etc/passwd\" shows a rogue user account.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-29383",
           "publishedDate": "2023-04-14T22:15:07.68Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -822,7 +818,7 @@
           "description": "NCurse v6.4-20230418 was discovered to contain a segmentation fault via the component _nc_wrap_entry().",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-50495",
           "publishedDate": "2023-12-12T15:15:07.867Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -838,7 +834,7 @@
           "description": "A vulnerability was found in systemd-resolved. This issue may allow systemd-resolved to accept records of DNSSEC-signed domains even when they have no signature, allowing man-in-the-middles (or the upstream DNS resolver) to manipulate records.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2023-7008",
           "publishedDate": "2023-12-23T13:15:07.573Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 5.9,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -854,7 +850,7 @@
           "description": "A timing-based side-channel flaw was found in libgcrypt's RSA implementation. This issue may allow a remote attacker to initiate a Bleichenbacher-style attack, which can lead to the decryption of RSA ciphertexts.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-2236",
           "publishedDate": "2024-03-06T22:15:57.977Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 5.9,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -870,7 +866,7 @@
           "description": "shadow-utils (aka shadow) 4.4 through 4.17.0 establishes a default /etc/subuid behavior (e.g., uid 100000 through 165535 for the first user account) that can realistically conflict with the uids of users defined on locally administered networks, potentially leading to account takeover, e.g., by leveraging newuidmap for access to an NFS home directory (or same-host resources in the case of remote logins by these local network users). NOTE: it may also be argued that system administrators should not have assigned uids, within local networks, that are within the range that can occur in /etc/subuid.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433",
           "publishedDate": "2024-12-26T09:15:07.267Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.1 (ubuntu 22.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.1 (ubuntu 22.04)",
           "cvssScore": 3.6,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -995,7 +991,7 @@
           "description": "GNU Wget through 1.21.1 does not omit the Authorization header upon a redirect to a different origin, a related issue to CVE-2018-1000007.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2021-31879",
           "publishedDate": "2021-04-29T05:15:08.707Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.1,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -1011,7 +1007,7 @@
           "description": "GNU Tar through 1.35 allows file overwrite via directory traversal in crafted TAR archives, with a certain two-step process. First, the victim must extract an archive that contains a ../ symlink to a critical directory. Second, the victim must extract an archive that contains a critical file, specified via a relative pathname that begins with the symlink name and ends with that critical file's name. Here, the extraction follows the symlink and overwrites the critical file. This bypasses the protection mechanism of \"Member name contains '..'\" that would occur for a single TAR archive that attempted to specify the critical file via a ../ approach. For example, the first archive can contain \"x -> ../../../../../home/victim/.ssh\" and the second archive can contain x/authorized_keys. This can affect server applications that automatically extract any number of user-supplied TAR archives, and were relying on the blocking of traversal. This can also affect software installation processes in which \"tar xf\" is run more than once (e.g., when installing a package can automatically install two dependencies that are set up as untrusted tarballs instead of official packages). NOTE: the official GNU Tar manual has an otherwise-empty directory for each \"tar xf\" in its Security Rules of Thumb; however, third-party advice leads users to run \"tar xf\" more than once into the same directory.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-45582",
           "publishedDate": "2025-07-11T17:15:37.183Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.6,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:L/A:L",
           "resolvedByBump": null
@@ -1027,7 +1023,7 @@
           "description": "In libexpat through 2.7.3, a crafted file with an approximate size of 2 MiB can lead to dozens of seconds of processing time.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2025-66382",
           "publishedDate": "2025-11-28T07:15:57.9Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -1043,7 +1039,7 @@
           "description": "util-linux is a random collection of Linux utilities. Prior to version 2.41.4, a TOCTOU (Time-of-Check-Time-of-Use) vulnerability has been identified in the SUID binary /usr/bin/mount from util-linux. The mount binary, when setting up loop devices, validates the source file path with user privileges via fork() + setuid() + realpath(), but subsequently re-canonicalizes and opens it with root privileges (euid=0) without verifying that the path has not been replaced between both operations. Neither O_NOFOLLOW, nor inode comparison, nor post-open fstat() are employed. This allows a local unprivileged user to replace the source file with a symlink pointing to any root-owned file or device during the race window, causing the SUID binary to open and mount it as root. Exploitation requires an /etc/fstab entry with user,loop options whose path points to a directory where the attacker has write permission, and that /usr/bin/mount has the SUID bit set (the default configuration on virtually all Linux distributions). The impact is unauthorized read access to root-protected files and block devices, including backup images, disk volumes, and any file containing a valid filesystem. This issue has been patched in version 2.41.4.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-27456",
           "publishedDate": "2026-04-03T22:16:25.4Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -1059,7 +1055,7 @@
           "description": "A flaw was found in util-linux. Improper hostname canonicalization in the `login(1)` utility, when invoked with the `-h` option, can modify the supplied remote hostname before setting `PAM_RHOST`. A remote attacker could exploit this by providing a specially crafted hostname, potentially bypassing host-based Pluggable Authentication Modules (PAM) access control rules that rely on fully qualified domain names. This could lead to unauthorized access.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-3184",
           "publishedDate": "2026-04-03T19:17:23.377Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -1075,7 +1071,7 @@
           "description": "A vulnerability in uutils coreutils mkfifo allows for the unauthorized modification of permissions on existing files. When mkfifo fails to create a FIFO because a file already exists at the target path, it fails to terminate the operation for that path and continues to execute a follow-up set_permissions call. This results in the existing file's permissions being changed to the default mode (often 644 after umask), potentially exposing sensitive files such as SSH private keys to other users on the system.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35341",
           "publishedDate": "2026-04-22T17:16:36.06Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 7.1,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
           "resolvedByBump": null
@@ -1091,7 +1087,7 @@
           "description": "The dd utility in uutils coreutils suppresses errors during file truncation operations by unconditionally calling Result::ok() on truncation attempts. While intended to mimic GNU behavior for special files like /dev/null, the uutils implementation also hides failures on regular files and directories caused by full disks or read-only file systems. This can lead to silent data corruption in backup or migration scripts, as the utility may report a successful operation even when the destination file contains old or garbage data.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35344",
           "publishedDate": "2026-04-22T17:16:36.49Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -1107,7 +1103,7 @@
           "description": "A vulnerability in the tail utility of uutils coreutils allows for the exfiltration of sensitive file contents when using the --follow=name option. Unlike GNU tail, the uutils implementation continues to monitor a path after it has been replaced by a symbolic link, subsequently outputting the contents of the link's target. In environments where a privileged user (e.g., root) monitors a log directory, a local attacker with write access to that directory can replace a log file with a symlink to a sensitive system file (such as /etc/shadow), causing tail to disclose the contents of the sensitive file.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35345",
           "publishedDate": "2026-04-22T17:16:36.627Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:L/A:N",
           "resolvedByBump": null
@@ -1123,7 +1119,7 @@
           "description": "The sort utility in uutils coreutils is vulnerable to a process panic when using the --files0-from option with inputs containing non-UTF-8 filenames. The implementation enforces UTF-8 encoding and utilizes expect(), causing an immediate crash when encountering valid but non-UTF-8 paths. This diverges from GNU sort, which treats filenames as raw bytes. A local attacker can exploit this to crash the utility and disrupt automated pipelines.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35348",
           "publishedDate": "2026-04-22T17:16:37.04Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -1139,7 +1135,7 @@
           "description": "The cp utility in uutils coreutils fails to properly handle setuid and setgid bits when ownership preservation fails. When copying with the -p (preserve) flag, the utility applies the source mode bits even if the chown operation is unsuccessful. This can result in a user-owned copy retaining original privileged bits, creating unexpected privileged executables that violate local security policies. This differs from GNU cp, which clears these bits when ownership cannot be preserved.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35350",
           "publishedDate": "2026-04-22T17:16:37.327Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.6,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:H/A:L",
           "resolvedByBump": null
@@ -1155,7 +1151,7 @@
           "description": "The mv utility in uutils coreutils fails to preserve file ownership during moves across different filesystem boundaries. The utility falls back to a copy-and-delete routine that creates the destination file using the caller's UID/GID rather than the source's metadata. This flaw breaks backups and migrations, causing files moved by a privileged user (e.g., root) to become root-owned unexpectedly, which can lead to information disclosure or restricted access for the intended owners.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35351",
           "publishedDate": "2026-04-22T17:16:37.457Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.2,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:H/UI:N/S:U/C:L/I:L/A:L",
           "resolvedByBump": null
@@ -1171,7 +1167,7 @@
           "description": "A Time-of-Check to Time-of-Use (TOCTOU) race condition exists in the mkfifo utility of uutils coreutils. The utility creates a FIFO and then performs a path-based chmod to set permissions. A local attacker with write access to the parent directory can swap the newly created FIFO for a symbolic link between these two operations. This redirects the chmod call to an arbitrary file, potentially enabling privilege escalation if the utility is run with elevated privileges.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35352",
           "publishedDate": "2026-04-22T17:16:37.597Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -1187,7 +1183,7 @@
           "description": "A Time-of-Check to Time-of-Use (TOCTOU) vulnerability exists in the mv utility of uutils coreutils during cross-device moves. The extended attribute (xattr) preservation logic uses multiple path-based system calls that perform fresh path-to-inode lookups for each operation. A local attacker with write access to the directory can exploit this race to swap files between calls, causing the destination file to receive an inconsistent mix of security xattrs, such as SELinux labels or file capabilities.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35354",
           "publishedDate": "2026-04-22T17:16:37.867Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -1203,7 +1199,7 @@
           "description": "The cp utility in uutils coreutils is vulnerable to an information disclosure race condition. Destination files are initially created with umask-derived permissions (e.g., 0644) before being restricted to their final mode (e.g., 0600) later in the process. A local attacker can race to open the file during this window; once obtained, the file descriptor remains valid and readable even after the permissions are tightened, exposing sensitive or private file contents.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35357",
           "publishedDate": "2026-04-22T17:16:38.267Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -1219,7 +1215,7 @@
           "description": "A Time-of-Check to Time-of-Use (TOCTOU) vulnerability in the cp utility of uutils coreutils allows an attacker to bypass no-dereference intent. The utility checks if a source path is a symbolic link using path-based metadata but subsequently opens it without the O_NOFOLLOW flag. An attacker with concurrent write access can swap a regular file for a symbolic link during this window, causing a privileged cp process to copy the contents of arbitrary sensitive files into a destination controlled by the attacker.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35359",
           "publishedDate": "2026-04-22T17:16:38.537Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.7,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -1235,7 +1231,7 @@
           "description": "The touch utility in uutils coreutils is vulnerable to a Time-of-Check to Time-of-Use (TOCTOU) race condition during file creation. When the utility identifies a missing path, it later attempts creation using File::create(), which internally uses O_TRUNC. An attacker can exploit this window to create a file or swap a symlink at the target path, causing touch to truncate an existing file and leading to permanent data loss.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35360",
           "publishedDate": "2026-04-22T17:16:38.673Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:H",
           "resolvedByBump": null
@@ -1251,7 +1247,7 @@
           "description": "A vulnerability in the rm utility of uutils coreutils allows the bypass of safeguard mechanisms intended to protect the current directory. While the utility correctly refuses to delete . or .., it fails to recognize equivalent paths with trailing slashes, such as ./ or .///. An accidental or malicious execution of rm -rf ./ results in the silent recursive deletion of all contents within the current directory. The command further obscures the data loss by reporting a misleading 'Invalid input' error, which may cause users to miss the critical window for data recovery.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35363",
           "publishedDate": "2026-04-22T17:16:39.12Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.6,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:R/S:U/C:N/I:H/A:L",
           "resolvedByBump": null
@@ -1267,7 +1263,7 @@
           "description": "A Time-of-Check to Time-of-Use (TOCTOU) race condition exists in the mv utility of uutils coreutils during cross-device operations. The utility removes the destination path before recreating it through a copy operation. A local attacker with write access to the destination directory can exploit this window to replace the destination with a symbolic link. The subsequent privileged move operation will follow the symlink, allowing the attacker to redirect the write and overwrite an arbitrary target file with contents from the source.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35364",
           "publishedDate": "2026-04-22T17:16:39.737Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:H",
           "resolvedByBump": null
@@ -1283,7 +1279,7 @@
           "description": "The nohup utility in uutils coreutils creates its default output file, nohup.out, without specifying explicit restricted permissions. This causes the file to inherit umask-based permissions, typically resulting in a world-readable file (0644). In multi-user environments, this allows any user on the system to read the captured stdout/stderr output of a command, potentially exposing sensitive information. This behavior diverges from GNU coreutils, which creates nohup.out with owner-only (0600) permissions.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35367",
           "publishedDate": "2026-04-22T17:16:40.423Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:N/A:N",
           "resolvedByBump": null
@@ -1299,7 +1295,7 @@
           "description": "A vulnerability exists in the chroot utility of uutils coreutils when using the --userspec option. The utility resolves the user specification via getpwnam() after entering the chroot but before dropping root privileges. On glibc-based systems, this can trigger the Name Service Switch (NSS) to load shared libraries (e.g., libnss_*.so.2) from the new root directory. If the NEWROOT is writable by an attacker, they can inject a malicious NSS module to execute arbitrary code as root, facilitating a full container escape or privilege escalation.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35368",
           "publishedDate": "2026-04-22T17:16:40.56Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 7.9,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:C/C:H/I:H/A:H",
           "resolvedByBump": null
@@ -1315,7 +1311,7 @@
           "description": "The id utility in uutils coreutils miscalculates the groups= section of its output. The implementation uses a user's real GID instead of their effective GID to compute the group list, leading to potentially divergent output compared to GNU coreutils. Because many scripts and automated processes rely on the output of id to make security-critical access-control or permission decisions, this discrepancy can lead to unauthorized access or security misconfigurations.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35370",
           "publishedDate": "2026-04-22T17:16:40.833Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4.4,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null
@@ -1331,7 +1327,7 @@
           "description": "The id utility in uutils coreutils exhibits incorrect behavior in its \"pretty print\" output when the real UID and effective UID differ. The implementation incorrectly uses the effective GID instead of the effective UID when performing a name lookup for the effective user. This results in misleading diagnostic output that can cause automated scripts or system administrators to make incorrect decisions regarding file permissions or access control.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35371",
           "publishedDate": "2026-04-22T17:16:40.987Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -1347,7 +1343,7 @@
           "description": "A logic error in the ln utility of uutils coreutils causes the program to reject source paths containing non-UTF-8 filename bytes when using target-directory forms (e.g., ln SOURCE... DIRECTORY). While GNU ln treats filenames as raw bytes and creates the links correctly, the uutils implementation enforces UTF-8 encoding, resulting in a failure to stat the file and a non-zero exit code. In environments where automated scripts or system tasks process valid but non-UTF-8 filenames common on Unix filesystems, this divergence causes the utility to fail, leading to a local denial of service for those specific operations.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35373",
           "publishedDate": "2026-04-22T17:16:41.997Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -1363,7 +1359,7 @@
           "description": "A Time-of-Check to Time-of-Use (TOCTOU) vulnerability exists in the split utility of uutils coreutils. The program attempts to prevent data loss by checking for identity between input and output files using their file paths before initiating the split operation. However, the utility subsequently opens the output file with truncation after this path-based validation is complete. A local attacker with write access to the directory can exploit this race window by manipulating mutable path components (e.g., swapping a path with a symbolic link). This can cause split to truncate and write to an unintended target file, potentially including the input file itself or other sensitive files accessible to the process, leading to permanent data loss.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35374",
           "publishedDate": "2026-04-22T17:16:42.127Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:H/A:H",
           "resolvedByBump": null
@@ -1379,7 +1375,7 @@
           "description": "A logic error in the env utility of uutils coreutils causes a failure to correctly parse command-line arguments when utilizing the -S (split-string) option. In GNU env, backslashes within single quotes are treated literally (with the exceptions of \\\\ and \\'). However, the uutils implementation incorrectly attempts to validate these sequences, resulting in an \"invalid sequence\" error and an immediate process termination with an exit status of 125 when encountering valid but unrecognized sequences like \\a or \\x. This divergence from GNU behavior breaks compatibility for automated scripts and administrative workflows that rely on standard split-string semantics, leading to a local denial of service for those operations.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-35377",
           "publishedDate": "2026-04-22T17:16:42.577Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:L/UI:N/S:U/C:N/I:N/A:L",
           "resolvedByBump": null
@@ -1443,7 +1439,7 @@
           "description": "The iconv() function in the GNU C Library versions 2.43 and earlier may crash due to an assertion failure when converting inputs from the IBM1390 or IBM1399 character sets, which may be used to remotely crash an application.\n\n\n\nThis vulnerability can be trivially mitigated by removing the IBM1390 and IBM1399 character sets from systems that do not need them.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4046",
           "publishedDate": "2026-03-30T18:16:19.573Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.3,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
           "resolvedByBump": null
@@ -1459,7 +1455,7 @@
           "description": "Libgcrypt before 1.12.2 mishandles Dilithium signing. Writes to a static array lack a bounds check but do not use attacker-controlled data.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-41990",
           "publishedDate": "2026-04-23T05:16:05.897Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.3,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:R/S:U/C:N/I:L/A:L",
           "resolvedByBump": null
@@ -1475,7 +1471,7 @@
           "description": "Calling gethostbyaddr or gethostbyaddr_r with a configured nsswitch.conf that specifies the library's DNS backend in the GNU C Library version 2.34 to version 2.43 could, with a crafted response from the configured DNS server, result in a violation of the DNS specification that causes the application to treat a non-answer section of the DNS response as a valid answer.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4437",
           "publishedDate": "2026-03-20T20:16:49.477Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 6.5,
           "cvssVector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L",
           "resolvedByBump": null
@@ -1491,7 +1487,7 @@
           "description": "Calling gethostbyaddr or gethostbyaddr_r with a configured nsswitch.conf that specifies the library's DNS backend in the GNU C library version 2.34 to version 2.43 could result in an invalid DNS hostname being returned to the caller in violation of the DNS specification.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-4438",
           "publishedDate": "2026-03-20T20:16:49.623Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 4,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
           "resolvedByBump": null
@@ -1507,7 +1503,7 @@
           "description": "A flaw was found in tar. A remote attacker could exploit this vulnerability by crafting a malicious archive, leading to hidden file injection with fully attacker-controlled content. This bypasses pre-extraction inspection mechanisms, potentially allowing an attacker to introduce malicious files onto a system without detection.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5704",
           "publishedDate": "2026-04-06T16:16:42.14Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:H/A:N",
           "resolvedByBump": null
@@ -1523,7 +1519,7 @@
           "description": "When sed is invoked with both -i (in-place edit) and --follow-symlinks, the function open_next_file() performs two separate, non-atomic filesystem operations on the same path: \n1. resolves symlink to its target and stores the resolved path for determining when output is written,\n2. opens the original symlink path (not the resolved one) to read the file. \nBetween these two calls there is a race window. If an attacker atomically replaces the symlink with a different target during that window, sed will: read content from the new (attacker-chosen) symlink target and write the processed result to the path recorded in step 1. This can lead to arbitrary file overwrite with attacker-controlled content in the context of the sed process.\n\n\nThis issue was fixed in version 4.10.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2026-5958",
           "publishedDate": "2026-04-20T12:16:08.433Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": null,
           "cvssVector": null,
           "resolvedByBump": null
@@ -1539,7 +1535,7 @@
           "description": "The C++ symbol demangler routine in cplus-dem.c in libiberty, as distributed in GNU Binutils 2.29, allows remote attackers to cause a denial of service (excessive memory allocation and application crash) via a crafted file, as demonstrated by a call from the Binary File Descriptor (BFD) library (aka libbfd).",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2017-13716",
           "publishedDate": "2017-08-28T21:29:00.293Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.5,
           "cvssVector": "CVSS:3.0/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
           "resolvedByBump": null
@@ -1555,7 +1551,7 @@
           "description": "A timing-based side-channel flaw was found in libgcrypt's RSA implementation. This issue may allow a remote attacker to initiate a Bleichenbacher-style attack, which can lead to the decryption of RSA ciphertexts.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-2236",
           "publishedDate": "2024-03-06T22:15:57.977Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 5.9,
           "cvssVector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N",
           "resolvedByBump": null
@@ -1571,7 +1567,7 @@
           "description": "shadow-utils (aka shadow) 4.4 through 4.17.0 establishes a default /etc/subuid behavior (e.g., uid 100000 through 165535 for the first user account) that can realistically conflict with the uids of users defined on locally administered networks, potentially leading to account takeover, e.g., by leveraging newuidmap for access to an NFS home directory (or same-host resources in the case of remote logins by these local network users). NOTE: it may also be argued that system administrators should not have assigned uids, within local networks, that are within the range that can occur in /etc/subuid.",
           "primaryUrl": "https://avd.aquasec.com/nvd/cve-2024-56433",
           "publishedDate": "2024-12-26T09:15:07.267Z",
-          "target": "ghcr.io/middlewaregruppen/mgp-base-images/java-21:1.0.2 (ubuntu 26.04)",
+          "target": "ghcr.io/crackitty/base-images/java-21:1.0.2 (ubuntu 26.04)",
           "cvssScore": 3.6,
           "cvssVector": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:N",
           "resolvedByBump": null

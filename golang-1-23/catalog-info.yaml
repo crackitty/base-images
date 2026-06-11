@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: golang-1-23-base-image
+  description: Go 1.23 base image for Golden Paths services
+  annotations:
+    github.com/project-slug: crackitty/base-images
+    backstage.io/source-location: url:https://github.com/crackitty/base-images/tree/main/golang-1-23
+    fleet-management/release-please-path: golang-1-23
+    fleet-management/container-image: ghcr.io/crackitty/base-images/golang-1-23
+    fleet-management/current-tag: 1.0.0
+    fleet-management/security-status: unknown
+    fleet-management/digest: sha256:379de5fb93cca2089e50da92195d5067d019b847520123fc9e9e76e139601fb7
+  tags:
+    - docker
+    - golang
+    - go
+    - base-image
+spec:
+  type: base-image
+  lifecycle: production
+  owner: group:default/platform-team

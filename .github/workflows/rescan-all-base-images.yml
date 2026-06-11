@@ -81,7 +81,7 @@ jobs:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.discover.outputs.matrix) }}
-    uses: ./.github/workflows/scan-base-image.yml
+    uses: crackitty/base-images/.github/workflows/scan-base-image.yml@main
     with:
       image_path: ${{ matrix.image_path }}
       image_tag: ${{ matrix.tag }}
@@ -89,5 +89,3 @@ jobs:
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      ORG_GP_APP_ID: ${{ secrets.ORG_GP_APP_ID }}
-      ORG_GP_APP_PRIVATE_KEY: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}

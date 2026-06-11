@@ -107,19 +107,11 @@ jobs:
              .metadata.annotations["fleet-management/digest"] = strenv(DIGEST)' \
             "${COMPONENT}/catalog-info.yaml"
 
-      - name: Generate GitHub App token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.ORG_GP_CLIENT_ID }}
-          private-key: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
       - name: Open and auto-merge PR
         id: create-pr
         uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: chore/catalog-tag-${{ matrix.rel }}-${{ matrix.tag }}
           commit-message: "chore: update ${{ matrix.rel }} catalog current-tag to ${{ matrix.tag }}"
           title: "chore: update ${{ matrix.rel }} catalog current-tag to ${{ matrix.tag }}"
@@ -129,7 +121,7 @@ jobs:
       - name: Auto-approve and merge PR
         if: steps.create-pr.outputs.pull-request-url != ''
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
         run: |
           gh pr review "$PR_URL" --approve
@@ -219,10 +211,10 @@ jobs:
           VERSION="${TAG_NAME#${{ matrix.rel }}-v}"
 
           # image_path convention: <org>/<repo>/<package-name>
-          IMAGE_PATH="middlewaregruppen/mgp-base-images/${{ matrix.rel }}"
+          IMAGE_PATH="crackitty/base-images/${{ matrix.rel }}"
 
-          # entity_ref convention: resource:default/mgp-<package-name>-base-image
-          ENTITY_REF="resource:default/mgp-${{ matrix.rel }}-base-image"
+          # entity_ref convention: resource:default/<package-name>-base-image
+          ENTITY_REF="resource:default/${{ matrix.rel }}-base-image"
 
           echo "Triggering scan for ${IMAGE_PATH}:${VERSION} (${ENTITY_REF})"
 

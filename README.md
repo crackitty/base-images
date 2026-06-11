@@ -1,9 +1,9 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
-# Middlewaregruppen Golden Paths base-images
+# My Golden Paths base-images
 
-This repository contains Docker base-images used across the Middlewaregruppen
-Golden Paths project.
+This repository contains Docker base-images used across the My Golden Paths
+project.
 
 ## What are base images?
 
@@ -115,61 +115,9 @@ their `FROM` tag to the new version.
 
 To register your repo as a consumer of a base image:
 
-1. Add the topic `uses-mgp-<component>-base` to your repository via
+1. Add the topic `uses-<component>-base` to your repository via
    **Settings → General → Topics**. For example, to consume the `java-17`
-   image, add the topic `uses-mgp-java-17-base`.
+   image, add the topic `uses-java-17-base`.
 
-2. Ensure the `ORG_GP_APP_ID` and `ORG_GP_APP_PRIVATE_KEY` GitHub App is
-   installed on your repository. Contact the platform team if it is not.
-
-3. Add the `bump-base-image` workflow to your repository at
+2. Add the `bump-base-image` workflow to your repository at
    `.github/workflows/bump-base-image.yml` (see below).
-
-### The bump-base-image workflow
-
-Your repo needs a workflow that listens for the `repository_dispatch` event
-and opens a PR updating the `FROM` line in your Dockerfile. A reference
-implementation is provided below — copy it into your repo and adjust the
-`DOCKERFILE` path if needed:
-
-```yaml
-name: Bump base image
-
-on:
-  repository_dispatch:
-    types: [bump-base-image]
-
-jobs:
-  bump:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Update FROM tag in Dockerfile
-        env:
-          IMAGE: ${{ github.event.client_payload.image }}
-          VERSION: ${{ github.event.client_payload.version }}
-        run: |
-          sed -i "s|FROM ${IMAGE}:[^ ]*|FROM ${IMAGE}:${VERSION}|" Dockerfile
-
-      - name: Open pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: bump-base-image/${{ github.event.client_payload.component }}-${{ github.event.client_payload.version }}
-          commit-message: "chore: bump ${{ github.event.client_payload.component }} base image to ${{ github.event.client_payload.version }}"
-          title: "chore: bump ${{ github.event.client_payload.component }} base image to ${{ github.event.client_payload.version }}"
-          body: |
-            Automated bump of `${{ github.event.client_payload.component }}` base image to version `${{ github.event.client_payload.version }}`.
-
-            Triggered by a new release in [mgp-base-images](https://github.com/middlewaregruppen/mgp-base-images).
-```
-
-### How it works end-to-end
-
-1. A new base image version is released in this repository.
-2. The `notify-consumers` workflow finds all repos in the org with the
-   matching topic and sends each a `repository_dispatch` event containing
-   the `image`, `component`, and `version`.
-3. The consumer's `bump-base-image` workflow receives the event, updates the
-   `FROM` line in the Dockerfile, and opens a PR for review.

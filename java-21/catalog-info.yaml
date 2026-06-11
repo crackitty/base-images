@@ -1,0 +1,21 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: java-21-base-image
+  description: Java 21 base image for Golden Paths services
+  annotations:
+    github.com/project-slug: crackitty/base-images
+    backstage.io/source-location: url:https://github.com/crackitty/base-images/tree/main/java-21
+    fleet-management/release-please-path: java-21
+    fleet-management/container-image: ghcr.io/crackitty/base-images/java-21
+    fleet-management/current-tag: 1.0.0
+    fleet-management/security-status: unknown
+    fleet-management/digest: sha256:fe369aa7f89f4516c19226d42d31c4fd7e8277561e0b50acec8c633f0882ed16
+  tags:
+    - docker
+    - java
+    - base-image
+spec:
+  type: base-image
+  lifecycle: production
+  owner: group:default/platform-team

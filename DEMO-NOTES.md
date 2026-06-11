@@ -16,6 +16,6 @@ Human intervention required here (for now):
 → scan-after-build job (NEW) dispatches scan-base-image.yml
 → Trivy scans the new image
 → normalize-trivy.js writes security-state.json
-→ scan PR auto-merges into mgp-base-images
+→ scan PR auto-merges into base-images
 → Backstage reads updated security-state.json
 → latestFixedTag updated, action → NONE ✅

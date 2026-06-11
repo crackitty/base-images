@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: open-liberty-java-17-base-image
+  description: Eclipse Temurin JDK 17 with Open Liberty base image for Golden Paths services
+  annotations:
+    github.com/project-slug: crackitty/base-images
+    backstage.io/source-location: url:https://github.com/crackitty/base-images/tree/main/open-liberty-java-17
+    fleet-management/release-please-path: open-liberty-java-17
+    fleet-management/container-image: ghcr.io/crackitty/base-images/open-liberty-java-17
+    fleet-management/current-tag: 1.0.0
+    fleet-management/security-status: unknown
+    fleet-management/digest: sha256:2896d641dc466c16ade676423c99e4c7d75bc2509b1f9ce8b2076bad15adf0af
+  tags:
+    - docker
+    - java
+    - open-liberty
+    - base-image
+spec:
+  type: base-image
+  lifecycle: production
+  owner: group:default/platform-team

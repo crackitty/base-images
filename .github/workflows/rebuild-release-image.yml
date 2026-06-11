@@ -14,7 +14,7 @@ on:
 
 jobs:
   rebuild:
-    uses: middlewaregruppen/mgp-base-images/.github/workflows/base-image-build.yml@main
+    uses: crackitty/base-images/.github/workflows/base-image-build.yml@main
     with:
       package-name: ${{ inputs.package-name }}
       tag-name: ${{ inputs.tag-name }}

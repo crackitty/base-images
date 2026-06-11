@@ -51,7 +51,7 @@ jobs:
             printf 'apiVersion: backstage.io/v1alpha1\n'
             printf 'kind: Resource\n'
             printf 'metadata:\n'
-            printf '  name: mgp-%s-base-image\n' "$IMAGE_NAME"
+            printf '  name: %s-base-image\n' "$IMAGE_NAME"
             printf '  description: %s\n' "$IMAGE_DESC"
             printf '  annotations:\n'
             printf '    github.com/project-slug: %s\n' "$REPO"

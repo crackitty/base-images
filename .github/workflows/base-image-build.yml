@@ -88,9 +88,9 @@ jobs:
           push: true
           labels: |
             ${{ steps.meta.outputs.labels }}
-            se.middlewaregruppen.base-image.name=mgp-${{ inputs.package-name }}-base-image
-            se.middlewaregruppen.base-image.version=${{ steps.get_version.outputs.version }}
-            se.middlewaregruppen.base-image.digest=unknown
+            se.crackitty.base-image.name=${{ inputs.package-name }}-base-image
+            se.crackitty.base-image.version=${{ steps.get_version.outputs.version }}
+            se.crackitty.base-image.digest=unknown
           tags: ${{ steps.meta.outputs.tags }}
 
       - name: Install Cosign

@@ -17,23 +17,19 @@ on:
         required: true
       DOCKER_PASSWORD:
         required: true
-      ORG_GP_CLIENT_ID:
-        required: true
-      ORG_GP_APP_PRIVATE_KEY:
-        required: true
   workflow_dispatch:
     inputs:
       image_path:
-        description: "Image path under ghcr.io, e.g. middlewaregruppen/mgp-base-images/java-21"
-        default: "middlewaregruppen/mgp-base-images/java-21"
+        description: "Image path under ghcr.io, e.g. crackitty/base-images/java-21"
+        default: "crackitty/base-images/java-21"
         required: true
       image_tag:
         description: "Released tag, e.g. 1.0.2"
         default: "1.0.0"
         required: true
       entity_ref:
-        description: "Backstage entity ref, e.g. resource:default/mgp-java-21-base-image"
-        default: "resource:default/mgp-java-21-base-image"
+        description: "Backstage entity ref, e.g. resource:default/java-21-base-image"
+        default: "resource:default/java-21-base-image"
         required: true
 
 permissions:
@@ -55,12 +51,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v4.1.0
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Run Trivy image scan
         uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
@@ -253,21 +243,3 @@ jobs:
           body: |
             Automated security scan result update for `ghcr.io/${{ inputs.image_path }}:${{ inputs.image_tag }}`.
           add-paths: backstage-security/
-
-      - name: Generate GitHub App token for PR approval
-        id: app-token
-        if: steps.create-pr.outputs.pull-request-url != ''
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-        with:
-          client-id: ${{ secrets.ORG_GP_CLIENT_ID }}
-          private-key: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Auto-approve and merge PR
-        if: steps.create-pr.outputs.pull-request-url != ''
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
-        run: |
-          gh pr review "$PR_URL" --approve
-          gh pr merge "$PR_URL" --auto --squash --delete-branch
