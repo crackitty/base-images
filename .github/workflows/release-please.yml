@@ -71,7 +71,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # Required to pass through to base-image-build.yml for Cosign OIDC signing
     secrets: inherit
 
   update-catalog-tag:

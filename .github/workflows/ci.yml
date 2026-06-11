@@ -91,5 +91,4 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write # required by base-image-build.yml for Cosign keyless signing
     secrets: inherit

@@ -37,7 +37,6 @@ on:
 permissions:
   contents: read
   packages: write
-  id-token: write # Required for keyless Cosign signing via GitHub Actions OIDC
 
 jobs:
   build-and-push:
