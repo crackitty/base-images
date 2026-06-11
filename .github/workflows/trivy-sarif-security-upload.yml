@@ -159,13 +159,16 @@ jobs:
                 (.invocations // [])
                 + [{
                     "executionSuccessful": true,
-                    "commandLine": "trivy image --format sarif --severity CRITICAL,HIGH --ignore-unfixed " + $image_ref
+                    "commandLine": ("trivy image --format sarif --severity CRITICAL,HIGH --ignore-unfixed " + $image_ref)
                   }]
               )
               |
               .results |= map(
                 .message.text =
-                  ("[" + $image_label + "] " + (.message.text // "Trivy vulnerability"))
+                  if (.message.text // "" | startswith("[" + $image_label + "] "))
+                  then .message.text
+                  else ("[" + $image_label + "] " + (.message.text // "Trivy vulnerability"))
+                  end
                 |
                 .properties.image = $image_ref
                 |
