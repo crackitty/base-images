@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/crackitty/base-images/compare/java-21-v1.0.2...java-21-v1.0.3) (2026-06-11)
+
+
+### Bug Fixes
+
+* updated some config and settings ([6dc15f3](https://github.com/crackitty/base-images/commit/6dc15f356aa6f226c9f296456633644216f2ca92))
+
 ## [1.0.2](https://github.com/crackitty/base-images/compare/java-21-v1.0.1...java-21-v1.0.2) (2026-05-13)
 
 ### Bug Fixes
