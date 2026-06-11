@@ -141,6 +141,40 @@ jobs:
             --severity CRITICAL,HIGH \
             --ignore-unfixed \
             "ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}"
+      - name: Add image name to SARIF results
+        if: steps.image-check.outputs.exists == 'true'
+        shell: bash
+        run: |
+          image_ref="ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}"
+          image_label="${{ matrix.image_path }}:${{ matrix.tag }}"
+          sarif="${{ steps.names.outputs.sarif_file }}"
+
+          jq --arg image_ref "$image_ref" \
+            --arg image_label "$image_label" \
+            --arg category "${{ steps.names.outputs.category }}" '
+            .runs |= map(
+              .automationDetails.id = ($category + "/")
+              |
+              .invocations = (
+                (.invocations // [])
+                + [{
+                    "executionSuccessful": true,
+                    "commandLine": "trivy image --format sarif --severity CRITICAL,HIGH --ignore-unfixed " + $image_ref
+                  }]
+              )
+              |
+              .results |= map(
+                .message.text =
+                  ("[" + $image_label + "] " + (.message.text // "Trivy vulnerability"))
+                |
+                .properties.image = $image_ref
+                |
+                .properties.image_name = $image_label
+              )
+            )
+          ' "$sarif" > "$sarif.tmp"
+
+          mv "$sarif.tmp" "$sarif"
 
       - name: Upload SARIF to GitHub Security
         if: steps.image-check.outputs.exists == 'true'
