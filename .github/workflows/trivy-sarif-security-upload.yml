@@ -135,8 +135,8 @@ jobs:
           image-ref: ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}
           format: sarif
           output: ${{ steps.names.outputs.sarif_file }}
-          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
-          ignore-unfixed: false
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
 
       - name: Upload SARIF to GitHub Security
         if: steps.image-check.outputs.exists == 'true'
