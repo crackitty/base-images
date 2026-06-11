@@ -1,0 +1,27 @@
+name: rebuild-release-image
+
+on:
+  workflow_dispatch:
+    inputs:
+      package-name:
+        description: 'Package name (folder with Dockerfile, e.g. java-17)'
+        required: true
+        type: string
+      tag-name:
+        description: 'Existing release tag (e.g. 1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  rebuild:
+    uses: middlewaregruppen/mgp-base-images/.github/workflows/base-image-build.yml@main
+    with:
+      package-name: ${{ inputs.package-name }}
+      tag-name: ${{ inputs.tag-name }}
+      dockerfile-path: ./${{ inputs.package-name }}/Dockerfile
+      context: ./${{ inputs.package-name }}
+      is-release: true
+    permissions:
+      contents: read
+      packages: write
+    secrets: inherit

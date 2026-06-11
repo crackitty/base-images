@@ -1,0 +1,159 @@
+name: Bump base image digests
+
+# Runs weekly and can be triggered manually.
+# For every Dockerfile that pins a base image by digest, the workflow:
+#   1. Reads the pinned image:tag from the comment line above the FROM
+#   2. Resolves the current digest for that tag from the upstream registry
+#   3. If the digest has changed, rewrites the FROM line
+#   4. Opens a PR so a human can review and merge the bump
+#
+# Convention expected in each Dockerfile:
+#   # image:tag          <-- human-readable tag (discovery anchor)
+#   FROM image:tag@sha256:<digest>
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # every Monday at 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      image:
+        description: >
+          Dockerfile directory to bump (e.g. "java-21", "java-17",
+          "open-liberty-java-17", "golang-1-23"). Leave empty to bump all images.
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Bump digests
+        id: bump
+        env:
+          TARGET_IMAGE: ${{ inputs.image }}
+        run: |
+          set -euo pipefail
+
+          changed=false
+
+          # When triggered from Backstage with a specific image directory, only
+          # process that Dockerfile. When run on schedule or manually without
+          # an input, process every Dockerfile in the repo.
+          if [[ -n "$TARGET_IMAGE" ]]; then
+            echo "Mode: single image — targeting ./${TARGET_IMAGE}/Dockerfile"
+            mapfile -t dockerfiles < <(find . -maxdepth 3 -path "./${TARGET_IMAGE}/Dockerfile")
+          else
+            echo "Mode: all images"
+            mapfile -t dockerfiles < <(find . -maxdepth 3 -name Dockerfile)
+          fi
+
+          if [[ ${#dockerfiles[@]} -eq 0 ]]; then
+            echo "ERROR: no Dockerfiles found (TARGET_IMAGE='${TARGET_IMAGE}')"
+            exit 1
+          fi
+
+          echo "Dockerfiles to process: ${dockerfiles[*]}"
+
+          for dockerfile in "${dockerfiles[@]}"; do
+            echo "── Processing $dockerfile"
+
+            # Read the file line by line; look for the pattern:
+            #   # image:tag
+            #   FROM image:tag@sha256:<digest>
+            prev_comment=""
+            while IFS= read -r line || [[ -n "$line" ]]; do
+
+              # Capture comment lines that look like "# registry/.../image:tag"
+              # (must contain a colon after the image name, no spaces after #)
+              if [[ "$line" =~ ^#[[:space:]]([^[:space:]]+:[^[:space:]]+)$ ]]; then
+                prev_comment="${BASH_REMATCH[1]}"
+                continue
+              fi
+
+              # Match a FROM line that is already pinned to a digest
+              if [[ "$line" =~ ^FROM[[:space:]]([^@]+)@sha256:([a-f0-9]+) ]]; then
+                image_with_tag="${BASH_REMATCH[1]}"   # e.g. eclipse-temurin:21-jre-jammy
+                current_digest="sha256:${BASH_REMATCH[2]}"
+
+                # Use the comment tag if present (it's the same as image_with_tag normally,
+                # but the comment is the authoritative human anchor)
+                if [[ -n "$prev_comment" ]]; then
+                  resolve_ref="$prev_comment"
+                else
+                  resolve_ref="$image_with_tag"
+                fi
+
+                echo "  Image ref : $resolve_ref"
+                echo "  Current   : $current_digest"
+
+                # Resolve the current linux/amd64 platform digest using docker manifest inspect.
+                # This returns the platform-specific digest (not the index/manifest-list digest)
+                # which is what Docker actually pins when pulling on an amd64 runner.
+                new_digest=$(docker manifest inspect "${resolve_ref}" 2>/dev/null \
+                  | jq -r '.manifests[] | select(.platform.os=="linux" and .platform.architecture=="amd64") | .digest' \
+                  || true)
+
+                if [[ -z "$new_digest" ]]; then
+                  echo "  WARNING: could not resolve digest for $resolve_ref — skipping"
+                  prev_comment=""
+                  continue
+                fi
+
+                echo "  Latest    : $new_digest"
+
+                if [[ "$new_digest" == "$current_digest" ]]; then
+                  echo "  No change."
+                else
+                  echo "  UPDATING $dockerfile"
+                  # Replace only the digest portion of the FROM line
+                  sed -i "s|FROM ${image_with_tag}@${current_digest}|FROM ${image_with_tag}@${new_digest}|g" "$dockerfile"
+                  changed=true
+                fi
+              fi
+
+              # Reset comment anchor when we hit a non-comment, non-FROM, non-blank line
+              if [[ ! "$line" =~ ^# ]] && [[ ! "$line" =~ ^FROM ]] && [[ -n "$line" ]]; then
+                prev_comment=""
+              fi
+
+            done < "$dockerfile"
+
+          done
+
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR if digests changed
+        if: steps.bump.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: chore/bump-base-digests
+          commit-message: "chore: bump base image digests to latest"
+          title: "chore: bump base image digests to latest"
+          body: |
+            Automated weekly digest bump.
+
+            One or more `FROM` lines were updated to the latest digest for their pinned tag.
+            The human-readable tag has not changed — only the `@sha256:` digest was updated.
+
+            **Review checklist:**
+            - [ ] Check the diff — only `@sha256:` values should change
+            - [ ] Review any Trivy scan results for the rebuilt images before merging
+          add-paths: |
+            java-17/Dockerfile
+            java-21/Dockerfile
+            open-liberty-java-17/Dockerfile
+            golang-1-23/Dockerfile

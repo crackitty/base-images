@@ -1,0 +1,81 @@
+# Syncs .release-please-manifest.json in open release-please PRs after a release lands on main.
+# For each open PR, it takes main's manifest values for all components except the one the PR owns,
+# preserving the PR's own bumped value.
+#
+# This is to help ensure that if multiple release PRs are open at the same time,
+# they don't step on each other's manifest changes and cause merge conflicts.
+
+name: sync-release-please-manifests
+
+on:
+  workflow_run:
+    workflows: [release-please]
+    types: [completed]
+
+concurrency:
+  group: sync-release-please-manifests-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  sync:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync manifest in open release-please PRs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          MAIN_MANIFEST=$(cat .release-please-manifest.json)
+
+          # Find all open release-please PRs
+          PRS=$(gh pr list --repo ${{ github.repository }} \
+            --state open \
+            --json number,headRefName \
+            --jq '[.[] | select(.headRefName | startswith("release-please--branches--main--components--"))]')
+
+          echo "$PRS" | jq -c '.[]' | while read -r pr; do
+            PR_NUMBER=$(echo "$pr" | jq -r '.number')
+            BRANCH=$(echo "$pr" | jq -r '.headRefName')
+            COMPONENT=$(echo "$BRANCH" | sed 's/release-please--branches--main--components--//')
+
+            echo "Syncing manifest for PR #$PR_NUMBER (component: $COMPONENT, branch: $BRANCH)"
+
+            git fetch origin "$BRANCH"
+            git checkout -B "$BRANCH" "origin/$BRANCH"
+            PR_MANIFEST=$(cat .release-please-manifest.json)
+
+            # Merge: take main's values for all keys, then overlay the PR's value for its own component
+            MERGED=$(jq -n \
+              --argjson main "$MAIN_MANIFEST" \
+              --argjson pr "$PR_MANIFEST" \
+              --arg component "$COMPONENT" \
+              '$main * { ($component): $pr[$component] }')
+
+            echo "$MERGED" > .release-please-manifest.json
+
+            # Only push if there's an actual change
+            if git diff --quiet .release-please-manifest.json; then
+              echo "No changes needed for PR #$PR_NUMBER"
+            else
+              git config user.name "github-actions[bot]"
+              git config user.email "github-actions[bot]@users.noreply.github.com"
+              git add .release-please-manifest.json
+              git commit -m "chore: sync manifest for $COMPONENT release PR"
+              git push origin "$BRANCH"
+              echo "Updated manifest on $BRANCH"
+            fi
+
+            # Restore main's manifest for the next iteration
+            git checkout main
+          done

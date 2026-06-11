@@ -1,0 +1,84 @@
+{
+  "include-component-in-tag": true,
+  "separate-pull-requests": true,
+  "changelog-sections": [
+    {
+      "type": "feat",
+      "section": "Features"
+    },
+    {
+      "type": "feature",
+      "section": "Features"
+    },
+    {
+      "type": "fix",
+      "section": "Bug Fixes"
+    },
+    {
+      "type": "perf",
+      "section": "Performance Improvements"
+    },
+    {
+      "type": "revert",
+      "section": "Reverts"
+    },
+    {
+      "type": "docs",
+      "section": "Documentation"
+    },
+    {
+      "type": "style",
+      "section": "Styles",
+      "hidden": true
+    },
+    {
+      "type": "chore",
+      "section": "Miscellaneous Chores",
+      "hidden": true
+    },
+    {
+      "type": "refactor",
+      "section": "Code Refactoring"
+    },
+    {
+      "type": "test",
+      "section": "Tests",
+      "hidden": true
+    },
+    {
+      "type": "build",
+      "section": "Build System",
+      "hidden": true
+    },
+    {
+      "type": "ci",
+      "section": "Continuous Integration",
+      "hidden": true
+    }
+  ],
+  "version-file": "version.txt",
+  "changelog-path": "CHANGELOG.md",
+  "release-type": "simple",
+  "packages": {
+    "java-17": {
+      "path": "java-17",
+      "component": "java-17"
+    },
+    "open-liberty-java-17": {
+      "path": "open-liberty-java-17",
+      "component": "open-liberty-java-17"
+    },
+    "java-21": {
+      "path": "java-21",
+      "component": "java-21"
+    },
+    "react-build-node24": {
+      "path": "react-build-node24",
+      "component": "react-build-node24"
+    },
+    "golang-1-23": {
+      "path": "golang-1-23",
+      "component": "golang-1-23"
+    }
+  }
+}

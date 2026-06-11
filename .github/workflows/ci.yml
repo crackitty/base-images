@@ -1,0 +1,95 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - "**"
+    paths-ignore:
+      - README.md
+      - .github/**
+      - .gitignore
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - .github/**
+      - .gitignore
+
+jobs:
+  discover-images:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.find-images.outputs.images }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 0 # Fetch all history for proper diff comparison
+
+      - name: Find all folders with Dockerfiles that have changes
+        id: find-images
+        run: |
+          # Get the list of changed files in the most recent commit, handle first commit gracefully
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          else
+            # First commit: treat all files as changed
+            CHANGED_FILES=$(git ls-files)
+          fi
+
+          echo "Changed files in most recent commit (or all files on first commit):"
+          echo "$CHANGED_FILES"
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changed files detected"
+            echo "images=[]" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Find all directories at the root that contain a Dockerfile and have changes
+          ALL_IMAGES=$(find . -maxdepth 2 -name Dockerfile -exec dirname {} \; | sed 's|^\./||')
+          echo "All images found:"
+          echo "$ALL_IMAGES"
+
+          IMAGES_WITH_CHANGES=()
+
+          for image in $ALL_IMAGES; do
+            echo "Checking if $image has changes..."
+            if echo "$CHANGED_FILES" | grep -q "^${image}/"; then
+              echo "  -> $image HAS changes"
+              IMAGES_WITH_CHANGES+=("$image")
+            else
+              echo "  -> $image has NO changes"
+            fi
+          done
+
+          # Convert to JSON array
+          if [ ${#IMAGES_WITH_CHANGES[@]} -eq 0 ]; then
+            IMAGES="[]"
+          else
+            IMAGES=$(printf '%s\n' "${IMAGES_WITH_CHANGES[@]}" | jq -R -s -c 'split("\n")[:-1]')
+          fi
+
+          echo "images=$IMAGES" >> $GITHUB_OUTPUT
+          echo "Found images with changes: $IMAGES"
+
+  build-images:
+    needs: discover-images
+    if: ${{ needs.discover-images.outputs.images != '[]' && needs.discover-images.outputs.images != '' }}
+    strategy:
+      matrix:
+        image: ${{ fromJson(needs.discover-images.outputs.images) }}
+    uses: middlewaregruppen/mgp-base-images/.github/workflows/base-image-build.yml@main
+    with:
+      package-name: ${{ matrix.image }}
+      dockerfile-path: ./${{ matrix.image }}/Dockerfile
+      context: ./${{ matrix.image }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # required by base-image-build.yml for Cosign keyless signing
+    secrets: inherit

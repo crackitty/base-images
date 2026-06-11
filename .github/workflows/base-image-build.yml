@@ -1,0 +1,130 @@
+# Reusable workflow for building and pushing Docker images for base images
+
+name: Build and Push Base Image
+
+on:
+  workflow_call:
+    outputs:
+      tags:
+        description: "Published Docker image tags"
+        value: ${{ jobs.build-and-push.outputs.tags }}
+      digest:
+        description: "Published Docker image digest"
+        value: ${{ jobs.build-and-push.outputs.digest }}
+    inputs:
+      package-name:
+        description: "The name of the package as in release-please and for tagging"
+        required: true
+        type: string
+      dockerfile-path:
+        description: "Path to the Dockerfile"
+        required: true
+        type: string
+      context:
+        description: "Build context for Docker"
+        required: true
+        type: string
+      tag-name:
+        description: "Release tag name (e.g., v1.2.3)"
+        required: false
+        type: string
+      is-release:
+        description: "Whether this is a release build"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # Required for keyless Cosign signing via GitHub Actions OIDC
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.output-tags.outputs.tags }}
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Extract version from .release-please-manifest.json
+        id: get_version
+        run: |
+          VERSION=$(jq -r '."${{ inputs.package-name }}"' .release-please-manifest.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Extract Docker tags with metadata-action
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ inputs.package-name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}},value=${{ inputs.tag-name }},enable=${{ inputs.is-release }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ inputs.tag-name }},enable=${{ inputs.is-release }}
+            type=semver,pattern={{major}},value=${{ inputs.tag-name }},enable=${{ inputs.is-release }}
+            type=sha
+            type=raw,value=latest,enable=${{ inputs.is-release }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile-path }}
+          push: true
+          labels: |
+            ${{ steps.meta.outputs.labels }}
+            se.middlewaregruppen.base-image.name=mgp-${{ inputs.package-name }}-base-image
+            se.middlewaregruppen.base-image.version=${{ steps.get_version.outputs.version }}
+            se.middlewaregruppen.base-image.digest=unknown
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a # v3.8.1
+
+      - name: Sign image with Cosign (keyless OIDC)
+        # Signs the image by digest so the signature is immutable — independent of tag mutations.
+        # COSIGN_EXPERIMENTAL enables keyless signing via the Sigstore transparency log (Rekor).
+        env:
+          COSIGN_EXPERIMENTAL: "1"
+        run: |
+          cosign sign --yes \
+            ghcr.io/${{ github.repository }}/${{ inputs.package-name }}@${{ steps.build.outputs.digest }}
+
+      - name: Display Docker image tags
+        run: |
+          echo "### 🐳 Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** \`ghcr.io/${{ github.repository }}/${{ inputs.package-name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull $(echo '${{ steps.meta.outputs.tags }}' | head -n1)" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+      - name: Output image tags
+        id: output-tags
+        run: |
+          echo "tags<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT

@@ -1,0 +1,233 @@
+# Workflow to run release-please for monorepo container images
+
+name: release-please
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - .gitignore
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      paths_released: ${{ steps.release.outputs.paths_released }}
+      all_outputs: ${{ toJson(steps.release.outputs) }}
+    steps:
+      - name: Release Please Manifest
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          manifest-file: .release-please-manifest.json
+          config-file: release-please-config.json
+
+  prepare-matrix:
+    needs: release-please
+    if: ${{ needs.release-please.outputs.paths_released != '' && needs.release-please.outputs.paths_released != '[]' }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+    steps:
+      - name: Build matrix with stripped tag names
+        id: build-matrix
+        env:
+          PATHS_RELEASED: ${{ needs.release-please.outputs.paths_released }}
+          RELEASE_OUTPUTS: ${{ needs.release-please.outputs.all_outputs }}
+        run: |
+          matrix=$(echo "$PATHS_RELEASED" | jq -c --argjson outputs "$RELEASE_OUTPUTS" '[
+            .[] | . as $rel | {
+              rel: $rel,
+              tag: ($outputs[$rel + "--tag_name"] | ltrimstr($rel + "-"))
+            }
+          ]')
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  build-images:
+    needs: [release-please, prepare-matrix]
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    uses: ./.github/workflows/base-image-build.yml
+    with:
+      package-name: ${{ matrix.rel }}
+      tag-name: ${{ matrix.tag }}
+      dockerfile-path: ./${{ matrix.rel }}/Dockerfile
+      context: ./${{ matrix.rel }}
+      is-release: true
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # Required to pass through to base-image-build.yml for Cosign OIDC signing
+    secrets: inherit
+
+  update-catalog-tag:
+    needs: [prepare-matrix, build-images]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+      pull-requests: write
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Update current-tag and digest annotations in catalog-info.yaml
+        env:
+          VERSION: ${{ matrix.tag }}
+          COMPONENT: ${{ matrix.rel }}
+          IMAGE_REPO: ghcr.io/${{ github.repository }}
+          SKOPEO_CREDS: ${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # matrix.tag is e.g. "v1.0.1" — strip the leading v for the annotation
+          SEMVER="${VERSION#v}"
+          DIGEST=$(skopeo inspect --creds "$SKOPEO_CREDS" --format '{{.Digest}}' "docker://${IMAGE_REPO}/${COMPONENT}:${SEMVER}")
+
+          SEMVER="$SEMVER" DIGEST="$DIGEST" yq -i \
+            '.metadata.annotations["fleet-management/current-tag"] = strenv(SEMVER) |
+             .metadata.annotations["fleet-management/digest"] = strenv(DIGEST)' \
+            "${COMPONENT}/catalog-info.yaml"
+
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.ORG_GP_CLIENT_ID }}
+          private-key: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Open and auto-merge PR
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: chore/catalog-tag-${{ matrix.rel }}-${{ matrix.tag }}
+          commit-message: "chore: update ${{ matrix.rel }} catalog current-tag to ${{ matrix.tag }}"
+          title: "chore: update ${{ matrix.rel }} catalog current-tag to ${{ matrix.tag }}"
+          body: "Automated update of `fleet-management/current-tag` annotation following release of `${{ matrix.rel }}` `${{ matrix.tag }}`."
+          add-paths: ${{ matrix.rel }}/catalog-info.yaml
+
+      - name: Auto-approve and merge PR
+        if: steps.create-pr.outputs.pull-request-url != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+        run: |
+          gh pr review "$PR_URL" --approve
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
+
+  update-release-notes:
+    needs: [release-please, prepare-matrix, build-images]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    steps:
+      - name: Append image tags to release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_OUTPUTS: ${{ needs.release-please.outputs.all_outputs }}
+        run: |
+          TAG_NAME=$(echo "$RELEASE_OUTPUTS" | jq -r '."${{ matrix.rel }}--tag_name"')
+          EXISTING=$(gh release view "$TAG_NAME" --repo ${{ github.repository }} --json body -q .body)
+
+          CLEANED_EXISTING=$(EXISTING="$EXISTING" python3 - <<'PY'
+          import os
+
+          body = os.environ.get("EXISTING", "")
+          section = "## 🐳 Docker Image\n"
+          if body.startswith(section):
+              body = ""
+          else:
+              marker = "\n" + section
+              idx = body.find(marker)
+              if idx >= 0:
+                  body = body[:idx]
+          print(body.rstrip())
+          PY
+          )
+
+          SEMVER="${{ matrix.tag }}"
+          SEMVER="${SEMVER#v}"
+          MAJOR=$(echo "$SEMVER" | cut -d. -f1)
+          MINOR=$(echo "$SEMVER" | cut -d. -f2)
+          IMAGE="ghcr.io/${{ github.repository }}/${{ matrix.rel }}"
+
+          TAGS=$(printf '%s\n%s\n%s\n%s' \
+            "${IMAGE}:${SEMVER}" \
+            "${IMAGE}:${MAJOR}.${MINOR}" \
+            "${IMAGE}:${MAJOR}" \
+            "${IMAGE}:latest")
+
+          {
+            echo "$CLEANED_EXISTING"
+            echo ""
+            echo "## 🐳 Docker Image"
+            echo ""
+            echo "**Registry:** \`ghcr.io/${{ github.repository }}/${{ matrix.rel }}\`"
+            echo ""
+            echo "**Tags:**"
+            echo '```'
+            echo "$TAGS"
+            echo '```'
+          } > /tmp/release-notes.md
+
+          gh release edit "$TAG_NAME" --repo ${{ github.repository }} --notes-file /tmp/release-notes.md
+
+  # After the image is built and pushed, trigger a Trivy scan for each released
+  # package so security-state.json is updated automatically. This closes the
+  # loop: bump digest → release → build → scan → Backstage shows clean status.
+  scan-after-build:
+    needs: [release-please, prepare-matrix, build-images]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # needed to dispatch workflows via gh cli
+      contents: read # needed for gh cli to query repo metadata (default branch)
+    strategy:
+      matrix:
+        include: ${{ fromJson(needs.prepare-matrix.outputs.matrix) }}
+    steps:
+      - name: Trigger security scan for ${{ matrix.rel }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_OUTPUTS: ${{ needs.release-please.outputs.all_outputs }}
+        run: |
+          # Derive the semver tag that was just released (e.g. "1.2.3")
+          TAG_NAME=$(echo "$RELEASE_OUTPUTS" | jq -r '."${{ matrix.rel }}--tag_name"')
+          # Strip the package prefix and leading 'v' (e.g. "java-21-v1.2.3" → "1.2.3")
+          VERSION="${TAG_NAME#${{ matrix.rel }}-v}"
+
+          # image_path convention: <org>/<repo>/<package-name>
+          IMAGE_PATH="middlewaregruppen/mgp-base-images/${{ matrix.rel }}"
+
+          # entity_ref convention: resource:default/mgp-<package-name>-base-image
+          ENTITY_REF="resource:default/mgp-${{ matrix.rel }}-base-image"
+
+          echo "Triggering scan for ${IMAGE_PATH}:${VERSION} (${ENTITY_REF})"
+
+          gh workflow run scan-base-image.yml \
+            --repo ${{ github.repository }} \
+            --field image_path="${IMAGE_PATH}" \
+            --field image_tag="${VERSION}" \
+            --field entity_ref="${ENTITY_REF}"

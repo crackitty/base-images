@@ -1,0 +1,94 @@
+name: Create New Base Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of the new base image (e.g., java-17)'
+        required: true
+        type: string
+      description:
+        description: 'Short description of the base image'
+        required: true
+        type: string
+      language:
+        description: 'Primary language/runtime (e.g., Java, Python, NodeJS)'
+        required: true
+        type: string
+
+jobs:
+  create-base-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Scaffold New Base Image
+        env:
+          IMAGE_NAME: ${{ inputs.name }}
+          IMAGE_DESC: ${{ inputs.description }}
+          IMAGE_LANG: ${{ inputs.language }}
+          REPO: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          mkdir -p "$IMAGE_NAME"
+
+          echo 'FROM scratch' > "$IMAGE_NAME/Dockerfile"
+          echo '# Changelog' > "$IMAGE_NAME/CHANGELOG.md"
+          echo '0.0.0' > "$IMAGE_NAME/version.txt"
+
+          LANGUAGE_LOWER=$(echo "$IMAGE_LANG" | tr '[:upper:]' '[:lower:]')
+
+          {
+            printf 'apiVersion: backstage.io/v1alpha1\n'
+            printf 'kind: Resource\n'
+            printf 'metadata:\n'
+            printf '  name: mgp-%s-base-image\n' "$IMAGE_NAME"
+            printf '  description: %s\n' "$IMAGE_DESC"
+            printf '  annotations:\n'
+            printf '    github.com/project-slug: %s\n' "$REPO"
+            printf '    backstage.io/source-location: url:https://github.com/%s/tree/main/%s\n' "$REPO" "$IMAGE_NAME"
+            printf '    fleet-management/release-please-path: %s\n' "$IMAGE_NAME"
+            printf '    fleet-management/container-image: ghcr.io/%s/%s\n' "$REPO" "$IMAGE_NAME"
+            printf '    fleet-management/current-tag: 0.0.0\n'
+            printf '    fleet-management/security-status: unknown\n'
+            printf '  tags:\n'
+            printf '    - docker\n'
+            printf '    - base-image\n'
+            printf '    - %s\n' "$LANGUAGE_LOWER"
+            printf 'spec:\n'
+            printf '  type: base-image\n'
+            printf '  lifecycle: production\n'
+            printf '  owner: group:default/platform-team\n'
+          } > "$IMAGE_NAME/catalog-info.yaml"
+
+          # Add the new catalog-info.yaml to the root Location entity
+          yq -i '.spec.targets += ["./" + env(IMAGE_NAME) + "/catalog-info.yaml"]' catalog-info.yaml
+
+          jq --arg name "$IMAGE_NAME" '
+            .packages[$name] = {
+              "path": $name,
+              "component": $name
+            }
+          ' release-please-config.json > tmp && mv tmp release-please-config.json
+
+          jq --arg name "$IMAGE_NAME" '. + {($name): "0.0.0"}' .release-please-manifest.json > tmp && mv tmp .release-please-manifest.json
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@84ae59a2cdc2258d6fa0732dd66352dddae2a412
+        with:
+          title: "Add ${{ inputs.name }} base image scaffold"
+          branch: create-${{ inputs.name }}
+          base: main
+          body: |
+            This PR scaffolds a new base image: ${{ inputs.name }}.
+
+            Once you merge to main, it will be picked up by the build mechanism.

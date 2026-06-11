@@ -1,0 +1,47 @@
+name: Update catalog digests
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: read
+
+jobs:
+  update-digests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Install skopeo
+        run: sudo apt-get update && sudo apt-get install -y skopeo
+
+      - name: Update catalog digests
+        env:
+          GHCR_READ_USER: ${{ secrets.GHCR_READ_USER }}
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -n "$GHCR_READ_USER" && -n "$GHCR_READ_TOKEN" ]]; then
+            export SKOPEO_CREDS="$GHCR_READ_USER:$GHCR_READ_TOKEN"
+          else
+            export SKOPEO_CREDS="$GITHUB_ACTOR:$GITHUB_TOKEN"
+          fi
+          bash .github/scripts/update-catalog-digests.sh
+        
+
+      - name: Open PR with digest updates
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch: chore/update-catalog-digests
+          commit-message: 'chore: update catalog digests'
+          title: 'chore: update catalog digests'
+          body: |
+            Backfilled `fleet-management/digest` annotations from the current
+            image tags in GHCR.
+          add-paths: |
+            **/catalog-info.yaml

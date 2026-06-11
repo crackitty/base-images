@@ -1,0 +1,93 @@
+name: Re-scan all base images
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/scripts/normalize-trivy.js
+      - '**/Dockerfile'
+  workflow_dispatch:
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.build-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        with:
+          fetch-depth: 2
+
+      - name: Build scan matrix
+        id: build-matrix
+        run: |
+          set -euo pipefail
+
+          # On a Dockerfile push, only scan changed folders.
+          # On a normalize-trivy.js push or manual dispatch, scan everything.
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || true)
+          SCRIPT_CHANGED=$(echo "$CHANGED_FILES" | grep -q '.github/scripts/normalize-trivy.js' && echo 'true' || echo 'false')
+
+          if [[ "$SCRIPT_CHANGED" == 'true' || "${{ github.event_name }}" == 'workflow_dispatch' ]]; then
+            echo "Scanning all images"
+            FILTER_FOLDERS=""
+          else
+            FILTER_FOLDERS=$(echo "$CHANGED_FILES" | grep 'Dockerfile' | xargs -I{} dirname {} | sed 's|^\./||' | sort -u)
+            echo "Scanning only changed folders: $FILTER_FOLDERS"
+          fi
+
+          entries='[]'
+
+          while IFS= read -r catalog_file; do
+            folder=$(dirname "$catalog_file" | sed 's|^\./||')
+
+            # If filtering, skip folders not in the changed set
+            if [[ -n "$FILTER_FOLDERS" ]] && ! echo "$FILTER_FOLDERS" | grep -qx "$folder"; then
+              continue
+            fi
+
+            image=$(yq '.metadata.annotations["fleet-management/container-image"] // ""' "$catalog_file")
+            tag=$(yq '.metadata.annotations["fleet-management/current-tag"] // ""' "$catalog_file")
+            entity_name=$(yq '.metadata.name // ""' "$catalog_file")
+            namespace=$(yq '.metadata.namespace // "default"' "$catalog_file")
+
+            if [[ -z "$image" || -z "$tag" || -z "$entity_name" ]]; then
+              echo "Skipping $catalog_file — missing required annotations"
+              continue
+            fi
+
+            image_path="${image#ghcr.io/}"
+            entity_ref="resource:${namespace}/${entity_name}"
+
+            echo "Queuing: folder=$folder image_path=$image_path tag=$tag entity_ref=$entity_ref"
+
+            entry=$(jq -n \
+              --arg image_path "$image_path" \
+              --arg tag "$tag" \
+              --arg entity_ref "$entity_ref" \
+              '{image_path: $image_path, tag: $tag, entity_ref: $entity_ref}')
+
+            entries=$(echo "$entries" | jq --argjson e "$entry" '. + [$e]')
+          done < <(find . -maxdepth 2 -name catalog-info.yaml -not -path "./catalog-info.yaml")
+
+          echo "matrix=$(echo "$entries" | jq -c '.')" >> "$GITHUB_OUTPUT"
+
+  scan:
+    needs: discover
+    if: ${{ needs.discover.outputs.matrix != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.discover.outputs.matrix) }}
+    uses: ./.github/workflows/scan-base-image.yml
+    with:
+      image_path: ${{ matrix.image_path }}
+      image_tag: ${{ matrix.tag }}
+      entity_ref: ${{ matrix.entity_ref }}
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      ORG_GP_APP_ID: ${{ secrets.ORG_GP_APP_ID }}
+      ORG_GP_APP_PRIVATE_KEY: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}

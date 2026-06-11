@@ -1,0 +1,273 @@
+name: Scan released base image
+
+on:
+  workflow_call:
+    inputs:
+      image_path:
+        required: true
+        type: string
+      image_tag:
+        required: true
+        type: string
+      entity_ref:
+        required: true
+        type: string
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+      ORG_GP_CLIENT_ID:
+        required: true
+      ORG_GP_APP_PRIVATE_KEY:
+        required: true
+  workflow_dispatch:
+    inputs:
+      image_path:
+        description: "Image path under ghcr.io, e.g. middlewaregruppen/mgp-base-images/java-21"
+        default: "middlewaregruppen/mgp-base-images/java-21"
+        required: true
+      image_tag:
+        description: "Released tag, e.g. 1.0.2"
+        default: "1.0.0"
+        required: true
+      entity_ref:
+        description: "Backstage entity ref, e.g. resource:default/mgp-java-21-base-image"
+        default: "resource:default/mgp-java-21-base-image"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: read
+
+jobs:
+  trivy-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v4.1.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: image
+          image-ref: ghcr.io/${{ inputs.image_path }}:${{ inputs.image_tag }}
+          format: json
+          output: trivy-result.json
+          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
+          ignore-unfixed: false
+
+      - name: Fetch image digest and base image reference
+        id: meta
+        run: |
+          DIGEST=$(skopeo inspect --format '{{.Digest}}' \
+            docker://ghcr.io/${{ inputs.image_path }}:${{ inputs.image_tag }})
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+          # Extract the folder name from the image path (last path segment)
+          FOLDER="${{ inputs.image_path }}"
+          FOLDER="${FOLDER##*/}"
+
+          # Parse the "# image:tag" anchor comment from the Dockerfile
+          BASE_IMAGE_FROM=$(grep -m1 '^#[[:space:]]\+[^[:space:]]\+:[^[:space:]]\+$' \
+            "${FOLDER}/Dockerfile" | sed 's/^#[[:space:]]*//' || true)
+          echo "base_image_from=$BASE_IMAGE_FROM" >> "$GITHUB_OUTPUT"
+
+          # Parse the pinned @sha256: digest from the FROM line in the Dockerfile
+          BASE_IMAGE_DIGEST=$(grep -m1 '^FROM ' "${FOLDER}/Dockerfile" \
+            | sed -n 's/.*@\(sha256:[a-f0-9]\+\).*/\1/p' || true)
+          echo "base_image_digest=$BASE_IMAGE_DIGEST" >> "$GITHUB_OUTPUT"
+
+          # Resolve the current linux/amd64 platform digest from the upstream registry
+          # using skopeo with --override-arch/--override-os to get the same platform
+          # digest that is pinned in the Dockerfile FROM line.
+          if [[ -n "$BASE_IMAGE_FROM" ]]; then
+            UPSTREAM_DIGEST=$(docker manifest inspect "${BASE_IMAGE_FROM}" 2>/dev/null \
+              | jq -r '.manifests[] | select(.platform.os=="linux" and .platform.architecture=="amd64") | .digest' \
+              || true)
+          else
+            UPSTREAM_DIGEST=""
+          fi
+          echo "upstream_digest=$UPSTREAM_DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Upstream digest for ${BASE_IMAGE_FROM}: ${UPSTREAM_DIGEST}"
+
+      - name: Scan upstream base image at latest digest
+        # Only runs when a new upstream digest is available — i.e. the case where
+        # we would recommend BUMP_DIGEST. Produces trivy-upstream-result.json which
+        # normalize-trivy.js uses to compute exactly which CVEs bumping will fix.
+        if: steps.meta.outputs.upstream_digest != '' && steps.meta.outputs.base_image_digest != steps.meta.outputs.upstream_digest
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          scan-type: image
+          image-ref: ${{ steps.meta.outputs.base_image_from }}@${{ steps.meta.outputs.upstream_digest }}
+          format: json
+          output: trivy-upstream-result.json
+          severity: CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN
+          ignore-unfixed: false
+
+      - name: Print CVE comparison
+        if: always()
+        run: |
+          node - <<'JSEOF'
+          const fs = require("fs");
+
+          function collectVulns(file) {
+            if (!fs.existsSync(file)) return null;
+            try {
+              const raw = JSON.parse(fs.readFileSync(file, "utf8"));
+              const rows = [];
+              for (const result of raw.Results || []) {
+                for (const v of result.Vulnerabilities || []) {
+                  rows.push({
+                    id:      v.VulnerabilityID,
+                    sev:     v.Severity || "UNKNOWN",
+                    status:  v.Status   || "unknown",
+                    pkg:     v.PkgName  || "?",
+                    fixed:   v.FixedVersion || "",
+                    target:  result.Target  || "",
+                  });
+                }
+              }
+              return rows;
+            } catch (e) {
+              console.error(`Failed to parse ${file}: ${e.message}`);
+              return null;
+            }
+          }
+
+          const SEV_ORDER = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3, UNKNOWN: 4 };
+          function sortRows(rows) {
+            return rows.slice().sort((a, b) => {
+              const sd = (SEV_ORDER[a.sev] ?? 4) - (SEV_ORDER[b.sev] ?? 4);
+              return sd !== 0 ? sd : a.id.localeCompare(b.id);
+            });
+          }
+
+          function printTable(rows) {
+            if (rows.length === 0) { console.log("  (none)"); return; }
+            const sorted = sortRows(rows);
+            // Deduplicate by CVE ID for the summary header, keep all rows for detail
+            const byId = {};
+            for (const r of sorted) {
+              if (!byId[r.id]) byId[r.id] = { ...r, pkgs: [] };
+              byId[r.id].pkgs.push(r.pkg + (r.fixed ? `→${r.fixed}` : ""));
+            }
+            for (const r of Object.values(byId)) {
+              const fixTag  = r.status === "fixed" ? "[FIXED]  " : "[AFFECTED]";
+              const fixInfo = r.fixed ? ` fixed_in=${r.fixed}` : "";
+              console.log(`  ${r.sev.padEnd(8)} ${fixTag} ${r.id}  pkg=${r.pkgs.join(", ")}${fixInfo}`);
+            }
+          }
+
+          function countBySev(rows) {
+            const c = { CRITICAL:0, HIGH:0, MEDIUM:0, LOW:0, UNKNOWN:0 };
+            const seen = new Set();
+            for (const r of rows) {
+              if (seen.has(r.id)) continue;
+              seen.add(r.id);
+              c[r.sev] = (c[r.sev] || 0) + 1;
+            }
+            return Object.entries(c).filter(([,n]) => n > 0)
+              .map(([s,n]) => `${s}:${n}`).join("  ");
+          }
+
+          const ourRows      = collectVulns("trivy-result.json");
+          const upstreamRows = collectVulns("trivy-upstream-result.json");
+
+          console.log("════════════════════════════════════════════════════════════");
+          console.log("CVE COMPARISON — built image vs upstream base image");
+          console.log("════════════════════════════════════════════════════════════");
+
+          if (!ourRows) {
+            console.log("ERROR: trivy-result.json not found or unreadable.");
+          } else {
+            console.log(`\n── Built image (trivy-result.json) — ${ourRows.length} findings, ${countBySev(ourRows)}`);
+            printTable(ourRows);
+          }
+
+          if (!upstreamRows) {
+            console.log("\n── Upstream base image (trivy-upstream-result.json) — not available");
+            console.log("   (upstream scan only runs when digests differ; check step 'Scan upstream base image at latest digest')");
+          } else {
+            console.log(`\n── Upstream base image (trivy-upstream-result.json) — ${upstreamRows.length} findings, ${countBySev(upstreamRows)}`);
+            printTable(upstreamRows);
+
+            if (ourRows) {
+              const upstreamIds = new Set(upstreamRows.map(r => r.id));
+              const ourIds      = new Set(ourRows.map(r => r.id));
+              const resolved    = [...ourIds].filter(id => !upstreamIds.has(id));
+              const newInUp     = [...upstreamIds].filter(id => !ourIds.has(id));
+
+              console.log("\n── Diff");
+              console.log(`  CVEs in built image gone from upstream (resolvedByBump): ${resolved.length}`);
+              if (resolved.length > 0) {
+                const resolvedRows = ourRows.filter(r => resolved.includes(r.id));
+                printTable(resolvedRows);
+              }
+              console.log(`  CVEs newly present in upstream (regressions / not in our build): ${newInUp.length}`);
+              if (newInUp.length > 0) {
+                const newRows = upstreamRows.filter(r => newInUp.includes(r.id));
+                printTable(newRows);
+              }
+            }
+          }
+
+          console.log("\n════════════════════════════════════════════════════════════");
+          JSEOF
+
+      - name: Normalize Trivy output
+        run: node .github/scripts/normalize-trivy.js
+        env:
+          ENTITY_REF: ${{ inputs.entity_ref }}
+          IMAGE: ghcr.io/${{ inputs.image_path }}
+          TAG: ${{ inputs.image_tag }}
+          DIGEST: ${{ steps.meta.outputs.digest }}
+          BASE_IMAGE_FROM: ${{ steps.meta.outputs.base_image_from }}
+          BASE_IMAGE_DIGEST: ${{ steps.meta.outputs.base_image_digest }}
+          UPSTREAM_DIGEST: ${{ steps.meta.outputs.upstream_digest }}
+          UPSTREAM_TRIVY_RESULT: trivy-upstream-result.json
+
+      - name: Open PR with updated security state
+        id: create-pr
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: security-scan/${{ inputs.image_path }}-${{ inputs.image_tag }}
+          commit-message: "chore: update security state for ${{ inputs.image_path }}:${{ inputs.image_tag }}"
+          title: "chore: update security state for ${{ inputs.image_path }}:${{ inputs.image_tag }}"
+          body: |
+            Automated security scan result update for `ghcr.io/${{ inputs.image_path }}:${{ inputs.image_tag }}`.
+          add-paths: backstage-security/
+
+      - name: Generate GitHub App token for PR approval
+        id: app-token
+        if: steps.create-pr.outputs.pull-request-url != ''
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.ORG_GP_CLIENT_ID }}
+          private-key: ${{ secrets.ORG_GP_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Auto-approve and merge PR
+        if: steps.create-pr.outputs.pull-request-url != ''
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_URL: ${{ steps.create-pr.outputs.pull-request-url }}
+        run: |
+          gh pr review "$PR_URL" --approve
+          gh pr merge "$PR_URL" --auto --squash --delete-branch
