@@ -127,16 +127,20 @@ jobs:
             echo "Image not found: ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}"
           fi
 
+      - name: Install Trivy
+        if: steps.image-check.outputs.exists == 'true'
+        uses: aquasecurity/setup-trivy@v0.2.3
+
       - name: Run Trivy image scan (SARIF)
         if: steps.image-check.outputs.exists == 'true'
-        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
-        with:
-          scan-type: image
-          image-ref: ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}
-          format: sarif
-          output: ${{ steps.names.outputs.sarif_file }}
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
+        shell: bash
+        run: |
+          trivy image \
+            --format sarif \
+            --output "${{ steps.names.outputs.sarif_file }}" \
+            --severity CRITICAL,HIGH \
+            --ignore-unfixed \
+            "ghcr.io/${{ matrix.image_path }}:${{ matrix.tag }}"
 
       - name: Upload SARIF to GitHub Security
         if: steps.image-check.outputs.exists == 'true'
