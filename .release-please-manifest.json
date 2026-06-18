@@ -1,7 +1,7 @@
 {
   "java-17": "1.0.0",
   "open-liberty-java-17": "1.0.0",
-  "java-21": "1.0.2",
+  "java-21": "1.0.3",
   "react-build-node24": "0.0.0",
   "golang-1-23": "1.0.0"
 }
